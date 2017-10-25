@@ -11,7 +11,7 @@ import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-//Hi im here
+
 public class TaxiGame extends JPanel {
 	private static final long serialVersionUID = -8396459457708163217L;
 	public static JFrame frame;
@@ -39,9 +39,11 @@ public class TaxiGame extends JPanel {
 
 	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64;
 	public static boolean[][] tracks;
+	InputHandler input;
 	BufferedImage tracksImg;
 
 	public TaxiGame() {
+		input = new InputHandler();
 		tracks = new boolean[12][9];
 		int[][] literalTrack = new int[][] {
 			{0, 0, 0, 1, 1, 1, 0, 0, 0},
@@ -74,7 +76,7 @@ public class TaxiGame extends JPanel {
 
 		this.setFocusable(true);
 		this.requestFocus();
-		this.addKeyListener(new InputHandler());
+		this.addKeyListener(input);
 
 		this.setPreferredSize(new Dimension(S_WIDTH, S_HEIGHT));
 	}
