@@ -41,4 +41,8 @@ public class InputHandler implements KeyListener {
 	public void keyTyped(KeyEvent e) {
 		
 	}
+	
+	public String toString() {
+		return "Right: " + right + "\nUp: " + up + "\nLeft: " + left + "\nDown: " + down;
+	}
 }

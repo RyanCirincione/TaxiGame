@@ -41,28 +41,22 @@ public class TaxiGame extends JPanel {
 	public static boolean[][] tracks;
 	InputHandler input;
 	BufferedImage tracksImg;
+	Vector taxiLocation, taxiVelocity;
 
 	public TaxiGame() {
+		taxiLocation = new Vector(2.5 * TILE_SIZE, 2.5 * TILE_SIZE);
+		taxiVelocity = new Vector();
 		input = new InputHandler();
 		tracks = new boolean[12][9];
-		int[][] literalTrack = new int[][] {
-			{0, 0, 0, 1, 1, 1, 0, 0, 0},
-			{0, 0, 1, 1, 0, 1, 0, 0, 0},
-			{0, 0, 1, 0, 1, 1, 1, 0, 0},
-			{0, 0, 1, 0, 1, 0, 1, 1, 1},
-			{0, 1, 1, 0, 1, 0, 1, 0, 1},
-			{0, 1, 0, 0, 1, 1, 1, 1, 1},
-			{0, 1, 0, 0, 0, 0, 1, 0, 0},
-			{0, 1, 1, 1, 1, 0, 1, 0, 0},
-			{0, 0, 1, 0, 1, 1, 1, 1, 0},
-			{0, 0, 1, 1, 1, 0, 0, 1, 0},
-			{0, 0, 0, 0, 1, 1, 1, 1, 0},
-			{0, 0, 0, 0, 0, 0, 0, 0, 0}
-		};
-		
-		for(int x = 0; x < literalTrack.length; x++) {
-			for(int y = 0; y < literalTrack[x].length; y++) {
-				if(literalTrack[x][y] != 0) {
+		int[][] literalTrack = new int[][] { { 0, 0, 0, 1, 1, 1, 0, 0, 0 }, { 0, 0, 1, 1, 0, 1, 0, 0, 0 },
+				{ 0, 0, 1, 0, 1, 1, 1, 0, 0 }, { 0, 0, 1, 0, 1, 0, 1, 1, 1 }, { 0, 1, 1, 0, 1, 0, 1, 0, 1 },
+				{ 0, 1, 0, 0, 1, 1, 1, 1, 1 }, { 0, 1, 0, 0, 0, 0, 1, 0, 0 }, { 0, 1, 1, 1, 1, 0, 1, 0, 0 },
+				{ 0, 0, 1, 0, 1, 1, 1, 1, 0 }, { 0, 0, 1, 1, 1, 0, 0, 1, 0 }, { 0, 0, 0, 0, 1, 1, 1, 1, 0 },
+				{ 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+
+		for (int x = 0; x < literalTrack.length; x++) {
+			for (int y = 0; y < literalTrack[x].length; y++) {
+				if (literalTrack[x][y] != 0) {
 					tracks[x][y] = true;
 				}
 			}
@@ -82,11 +76,62 @@ public class TaxiGame extends JPanel {
 	}
 
 	public void tick() {
+		if (input.right) {
+			// Taxi is on horizontal track
+			if ((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
+				// Taxi is currently moving vertically
+				if (Math.abs(taxiVelocity.y) > 0.00001) {
+					taxiVelocity.x = Math.abs(taxiVelocity.y);
+					taxiVelocity.y = 0;
+				}
+				taxiVelocity.x += 0.05;
+			}
+		}
 
+		if (input.up) {
+			// Taxi is on vertical track
+			if ((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
+				// Taxi is currently moving horizontally
+				if (Math.abs(taxiVelocity.x) > 0.00001) {
+					taxiVelocity.y = -Math.abs(taxiVelocity.x);
+					taxiVelocity.x = 0;
+				}
+				taxiVelocity.y -= 0.05;
+			}
+		}
+		if (input.left) {
+			// Taxi is on horizontal track
+			if ((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
+				// Taxi is currently moving vertically
+				if (Math.abs(taxiVelocity.y) > 0.00001) {
+					taxiVelocity.x = -Math.abs(taxiVelocity.y);
+					taxiVelocity.y = 0;
+				}
+				taxiVelocity.x -= 0.05;
+			}
+		}
+
+		if (input.down) {
+			// Taxi is on vertical track
+			if ((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
+				// Taxi is currently moving horizontally
+				if (Math.abs(taxiVelocity.x) > 0.00001) {
+					taxiVelocity.y = Math.abs(taxiVelocity.x);
+					taxiVelocity.x = 0;
+				}
+				taxiVelocity.y += 0.05;
+			}
+		}
+		
+		if(taxiVelocity.length() > 6) {
+			taxiVelocity.setLength(6);
+		}
+		taxiLocation = taxiLocation.add(taxiVelocity);
 	}
 
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
+		super.paintComponent(g);
 
 		// Draw tracks
 		g.setColor(Color.white);
@@ -104,5 +149,9 @@ public class TaxiGame extends JPanel {
 				}
 			}
 		}
+
+		// Draw taxi
+		g.setColor(Color.yellow);
+		g.fillOval((int) (taxiLocation.x - 5), (int) (taxiLocation.y - 5), 10, 10);
 	}
 }
