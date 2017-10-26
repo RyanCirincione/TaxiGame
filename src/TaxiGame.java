@@ -76,57 +76,9 @@ public class TaxiGame extends JPanel {
 	}
 
 	public void tick() {
-		if (input.right) {
-			// Taxi is on horizontal track
-			if ((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
-				// Taxi is currently moving vertically
-				if (Math.abs(taxiVelocity.y) > 0.00001) {
-					taxiVelocity.x = Math.abs(taxiVelocity.y);
-					taxiVelocity.y = 0;
-				}
-				taxiVelocity.x += 0.05;
-			}
-		}
-
-		if (input.up) {
-			// Taxi is on vertical track
-			if ((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
-				// Taxi is currently moving horizontally
-				if (Math.abs(taxiVelocity.x) > 0.00001) {
-					taxiVelocity.y = -Math.abs(taxiVelocity.x);
-					taxiVelocity.x = 0;
-				}
-				taxiVelocity.y -= 0.05;
-			}
-		}
-		if (input.left) {
-			// Taxi is on horizontal track
-			if ((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
-				// Taxi is currently moving vertically
-				if (Math.abs(taxiVelocity.y) > 0.00001) {
-					taxiVelocity.x = -Math.abs(taxiVelocity.y);
-					taxiVelocity.y = 0;
-				}
-				taxiVelocity.x -= 0.05;
-			}
-		}
-
-		if (input.down) {
-			// Taxi is on vertical track
-			if ((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2) {
-				// Taxi is currently moving horizontally
-				if (Math.abs(taxiVelocity.x) > 0.00001) {
-					taxiVelocity.y = Math.abs(taxiVelocity.x);
-					taxiVelocity.x = 0;
-				}
-				taxiVelocity.y += 0.05;
-			}
-		}
-		
-		if(taxiVelocity.length() > 6) {
-			taxiVelocity.setLength(6);
-		}
-		taxiLocation = taxiLocation.add(taxiVelocity);
+		// This method is for shoving all the hell that is and will be the
+		// controlling of the taxi's position relative to the tracks
+		movementHell();
 	}
 
 	public void paintComponent(Graphics gr) {
@@ -153,5 +105,124 @@ public class TaxiGame extends JPanel {
 		// Draw taxi
 		g.setColor(Color.yellow);
 		g.fillOval((int) (taxiLocation.x - 5), (int) (taxiLocation.y - 5), 10, 10);
+	}
+
+	private static boolean inBounds(double x, double y) {
+		return x >= 0 && y >= 0 && x / TILE_SIZE < tracks.length
+				&& y / TILE_SIZE < tracks[(int) (x / TILE_SIZE)].length;
+	}
+
+	private void movementHell() {
+		if (input.right) {
+			// Taxi is on horizontal track (or switching to), and can move right
+			if (((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2 || (int) ((taxiLocation.y - TILE_SIZE / 2 - 1)
+					/ TILE_SIZE) != (int) ((taxiLocation.y + taxiVelocity.y - TILE_SIZE / 2) / TILE_SIZE))
+					&& inBounds(taxiLocation.x + TILE_SIZE / 2, taxiLocation.y)
+					&& tracks[(int) ((taxiLocation.x + TILE_SIZE / 2) / TILE_SIZE)][(int) (taxiLocation.y
+							/ TILE_SIZE)]) {
+				// Taxi is currently moving vertically
+				if (Math.abs(taxiVelocity.y) > 0.00001) {
+					taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+					taxiVelocity.x = Math.abs(taxiVelocity.y);
+					taxiVelocity.y = 0;
+				}
+				taxiVelocity.x += 0.05;
+			}
+		}
+
+		if (input.up) {
+			// Taxi is on vertical track (or switching to), and can move up
+			if (((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2 || (int) ((taxiLocation.x - TILE_SIZE / 2 - 1)
+					/ TILE_SIZE) != (int) ((taxiLocation.x + taxiVelocity.x - TILE_SIZE / 2) / TILE_SIZE))
+					&& inBounds(taxiLocation.x, taxiLocation.y - TILE_SIZE / 2 - 1)
+					&& tracks[(int) (taxiLocation.x / TILE_SIZE)][(int) ((taxiLocation.y - TILE_SIZE / 2 - 1)
+							/ TILE_SIZE)]) {
+				// Taxi is currently moving horizontally
+				if (Math.abs(taxiVelocity.x) > 0.00001) {
+					taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+					taxiVelocity.y = -Math.abs(taxiVelocity.x);
+					taxiVelocity.x = 0;
+				}
+				taxiVelocity.y -= 0.05;
+			}
+		}
+		if (input.left) {
+			// Taxi is on horizontal track (or switching to), and can move left
+			if (((taxiLocation.y - TILE_SIZE / 2 + 1) % TILE_SIZE < 2 || (int) ((taxiLocation.y - TILE_SIZE / 2 - 1)
+					/ TILE_SIZE) != (int) ((taxiLocation.y + taxiVelocity.y - TILE_SIZE / 2) / TILE_SIZE))
+					&& inBounds(taxiLocation.x - TILE_SIZE / 2 - 1, taxiLocation.y)
+					&& tracks[(int) ((taxiLocation.x - TILE_SIZE / 2 - 1) / TILE_SIZE)][(int) (taxiLocation.y
+							/ TILE_SIZE)]) {
+				// Taxi is currently moving vertically
+				if (Math.abs(taxiVelocity.y) > 0.00001) {
+					taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+					taxiVelocity.x = -Math.abs(taxiVelocity.y);
+					taxiVelocity.y = 0;
+				}
+				taxiVelocity.x -= 0.05;
+			}
+		}
+
+		if (input.down) {
+			// Taxi is on vertical track (or switching to), and can move down
+			if (((taxiLocation.x - TILE_SIZE / 2 + 1) % TILE_SIZE < 2 || (int) ((taxiLocation.x - TILE_SIZE / 2 - 1)
+					/ TILE_SIZE) != (int) ((taxiLocation.x + taxiVelocity.x - TILE_SIZE / 2) / TILE_SIZE))
+					&& inBounds(taxiLocation.x, taxiLocation.y + TILE_SIZE / 2)
+					&& tracks[(int) (taxiLocation.x / TILE_SIZE)][(int) ((taxiLocation.y + TILE_SIZE / 2)
+							/ TILE_SIZE)]) {
+				// Taxi is currently moving horizontally
+				if (Math.abs(taxiVelocity.x) > 0.00001) {
+					taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+					taxiVelocity.y = Math.abs(taxiVelocity.x);
+					taxiVelocity.x = 0;
+				}
+				taxiVelocity.y += 0.05;
+			}
+		}
+
+		// Block movement right if there is no track to the right
+		if (taxiVelocity.x > 0) {
+			if (!(inBounds(taxiLocation.x + taxiVelocity.x + TILE_SIZE / 2, taxiLocation.y)
+					&& tracks[(int) ((taxiLocation.x + taxiVelocity.x + TILE_SIZE / 2)
+							/ TILE_SIZE)][(int) (taxiLocation.y / TILE_SIZE)])) {
+				taxiVelocity.x = 0;
+				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+			}
+		}
+
+		// Block movement up if there is no track up
+		if (taxiVelocity.y < 0) {
+			if (!(inBounds(taxiLocation.x, taxiLocation.y + taxiVelocity.y - TILE_SIZE / 2)
+					&& tracks[(int) ((taxiLocation.x)
+							/ TILE_SIZE)][(int) ((taxiLocation.y + taxiVelocity.y - TILE_SIZE / 2) / TILE_SIZE)])) {
+				taxiVelocity.y = 0;
+				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+			}
+		}
+
+		// Block movement left if there is no track to the left
+		if (taxiVelocity.x < 0) {
+			if (!(inBounds(taxiLocation.x + taxiVelocity.x - TILE_SIZE / 2, taxiLocation.y)
+					&& tracks[(int) ((taxiLocation.x + taxiVelocity.x - TILE_SIZE / 2)
+							/ TILE_SIZE)][(int) (taxiLocation.y / TILE_SIZE)])) {
+				taxiVelocity.x = 0;
+				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+			}
+		}
+
+		// Block movement down if there is no track down
+		if (taxiVelocity.y > 0) {
+			if (!(inBounds(taxiLocation.x, taxiLocation.y + taxiVelocity.y + TILE_SIZE / 2)
+					&& tracks[(int) ((taxiLocation.x)
+							/ TILE_SIZE)][(int) ((taxiLocation.y + taxiVelocity.y + TILE_SIZE / 2) / TILE_SIZE)])) {
+				taxiVelocity.y = 0;
+				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+			}
+		}
+
+		if (taxiVelocity.length() > 4) {
+			taxiVelocity.setLength(4);
+		}
+		taxiLocation = taxiLocation.add(taxiVelocity);
 	}
 }
