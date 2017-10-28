@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,8 +43,10 @@ public class TaxiGame extends JPanel {
 	InputHandler input;
 	BufferedImage tracksImg;
 	Vector taxiLocation, taxiVelocity;
+	ArrayList<Vector> clients;
 
 	public TaxiGame() {
+		clients = new ArrayList<Vector>();
 		taxiLocation = new Vector(2.5 * TILE_SIZE, 2.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
 		input = new InputHandler();
@@ -79,6 +82,29 @@ public class TaxiGame extends JPanel {
 		// This method is for shoving all the hell that is and will be the
 		// controlling of the taxi's position relative to the tracks
 		movementHell();
+
+		// Always have 3 clients to pick up
+		while (clients.size() < 3) {
+			Vector v = new Vector(Math.random() * tracks.length * TILE_SIZE,
+					Math.random() * tracks[0].length * TILE_SIZE);
+			if (tracks[(int) (v.x / TILE_SIZE)][(int) (v.y / TILE_SIZE)]) {
+				clients.add(v);
+			}
+		}
+
+		// Pick up clients (when moving slowly)
+		if (taxiVelocity.length() < 0.5) {
+			for (int i = 0; i < clients.size(); i++) {
+				double d = taxiLocation.distance2(clients.get(i));
+				if (d < Math.pow(TILE_SIZE * 3 / 4, 2)) {
+					if (d < 5 * 5) {
+						clients.remove(i--);
+					} else {
+						clients.get(i).set(clients.get(i).lerp(taxiLocation, 1));
+					}
+				}
+			}
+		}
 	}
 
 	public void paintComponent(Graphics gr) {
@@ -105,6 +131,14 @@ public class TaxiGame extends JPanel {
 		// Draw taxi
 		g.setColor(Color.yellow);
 		g.fillOval((int) (taxiLocation.x - 5), (int) (taxiLocation.y - 5), 10, 10);
+
+		// Draw clients
+		g.setColor(Color.orange);
+		for (Vector c : clients) {
+			g.fillOval((int) (c.x - 2), (int) (c.y - 2), 5, 5);
+			g.drawOval((int) (c.x - TILE_SIZE * 3 / 4), (int) (c.y - TILE_SIZE * 3 / 4), TILE_SIZE * 3 / 2,
+					TILE_SIZE * 3 / 2);
+		}
 	}
 
 	private static boolean inBounds(double x, double y) {

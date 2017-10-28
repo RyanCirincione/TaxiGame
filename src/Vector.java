@@ -30,6 +30,48 @@ public class Vector {
 	}
 
 	/**
+	 * Sets this vector's x and y
+	 * 
+	 * @param x
+	 *            New x
+	 * @param y
+	 *            New y
+	 * @return This vector (for chaining)
+	 */
+	public Vector set(double x, double y) {
+		this.x = x;
+		this.y = y;
+
+		return this;
+	}
+
+	/**
+	 * Sets this vector's x and y based on the given vector
+	 * 
+	 * @param v
+	 *            Vector with new x and y
+	 * @return This vector (for chaining)
+	 */
+	public Vector set(Vector v) {
+		this.set(v.x, v.y);
+
+		return this;
+	}
+
+	/**
+	 * Returns a new vector that is this vector lerped toward v by distance
+	 * 
+	 * @param v
+	 *            The vector to be lerped to
+	 * @param distance
+	 *            The distance to be lerped by
+	 * @return
+	 */
+	public Vector lerp(Vector v, double distance) {
+		return this.add(v.minus(this).setLength(distance));
+	}
+
+	/**
 	 * Creates a new vector that is the sum of this and v
 	 * 
 	 * @param v
@@ -38,6 +80,17 @@ public class Vector {
 	 */
 	public Vector add(Vector v) {
 		return new Vector(x + v.x, y + v.y);
+	}
+
+	/**
+	 * Creates a new vector that is the difference of this and v
+	 * 
+	 * @param v
+	 *            The vector to be subtracted from this
+	 * @return The new vector difference
+	 */
+	public Vector minus(Vector v) {
+		return new Vector(x - v.x, y - v.y);
 	}
 
 	/**
@@ -54,7 +107,7 @@ public class Vector {
 	 * 
 	 * @param l
 	 *            The target length
-	 * @return This vector
+	 * @return This vector (for chaining)
 	 */
 	public Vector setLength(double l) {
 		double d = this.distance(new Vector());
@@ -102,7 +155,7 @@ public class Vector {
 	public Vector scale(double s) {
 		return new Vector(x * s, y * s);
 	}
-	
+
 	public String toString() {
 		return "<" + x + ", " + y + ">";
 	}
