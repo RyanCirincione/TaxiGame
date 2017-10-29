@@ -156,6 +156,20 @@ public class Vector {
 		return new Vector(x * s, y * s);
 	}
 
+	/**
+	 * Creates a copy of this vector
+	 * 
+	 * @return A new vector with the same x and y as this one
+	 */
+	public Vector clone() {
+		return new Vector(x, y);
+	}
+
+	/**
+	 * Converts this vector to a string of the form <x, y>
+	 * 
+	 * @return A string of the format "<" + x + ", " + y + ">"
+	 */
 	public String toString() {
 		return "<" + x + ", " + y + ">";
 	}

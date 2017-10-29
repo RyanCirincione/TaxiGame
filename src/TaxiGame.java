@@ -43,9 +43,12 @@ public class TaxiGame extends JPanel {
 	InputHandler input;
 	BufferedImage tracksImg;
 	Vector taxiLocation, taxiVelocity;
-	ArrayList<Vector> clients;
+	ArrayList<Vector> clients, destinations;
+	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
+		completedClients = new ArrayList<Vector[]>();
+		destinations = new ArrayList<Vector>();
 		clients = new ArrayList<Vector>();
 		taxiLocation = new Vector(2.5 * TILE_SIZE, 2.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
@@ -84,7 +87,7 @@ public class TaxiGame extends JPanel {
 		movementHell();
 
 		// Always have 3 clients to pick up
-		while (clients.size() < 3) {
+		while (clients.size() + destinations.size() < 4) {
 			Vector v = new Vector(Math.random() * tracks.length * TILE_SIZE,
 					Math.random() * tracks[0].length * TILE_SIZE);
 			if (tracks[(int) (v.x / TILE_SIZE)][(int) (v.y / TILE_SIZE)]) {
@@ -99,10 +102,40 @@ public class TaxiGame extends JPanel {
 				if (d < Math.pow(TILE_SIZE * 3 / 4, 2)) {
 					if (d < 5 * 5) {
 						clients.remove(i--);
+						while (true) {
+							Vector v = new Vector(Math.random() * tracks.length * TILE_SIZE,
+									Math.random() * tracks[0].length * TILE_SIZE);
+							if (tracks[(int) (v.x / TILE_SIZE)][(int) (v.y / TILE_SIZE)]) {
+								destinations.add(v);
+								break;
+							}
+						}
 					} else {
 						clients.get(i).set(clients.get(i).lerp(taxiLocation, 1));
 					}
 				}
+			}
+		}
+
+		// Drop off clients (when moving slowly)
+		if (taxiVelocity.length() < 0.5) {
+			for (int i = 0; i < destinations.size(); i++) {
+				double d = taxiLocation.distance2(destinations.get(i));
+				if (d < Math.pow(TILE_SIZE / 1.5, 2)) {
+					completedClients.add(new Vector[] { taxiLocation.clone(),
+							destinations.get(i).clone().minus(taxiLocation).setLength(0.3), new Vector(255, 0) });
+					destinations.remove(i--);
+				}
+			}
+		}
+
+		// Update completed clients
+		for (int i = 0; i < completedClients.size(); i++) {
+			completedClients.get(i)[0] = completedClients.get(i)[0].add(completedClients.get(i)[1]);
+
+			completedClients.get(i)[2].x -= 2.5;
+			if (completedClients.get(i)[2].x <= 0) {
+				completedClients.remove(i--);
 			}
 		}
 	}
@@ -138,6 +171,19 @@ public class TaxiGame extends JPanel {
 			g.fillOval((int) (c.x - 2), (int) (c.y - 2), 5, 5);
 			g.drawOval((int) (c.x - TILE_SIZE * 3 / 4), (int) (c.y - TILE_SIZE * 3 / 4), TILE_SIZE * 3 / 2,
 					TILE_SIZE * 3 / 2);
+		}
+
+		// Draw completed clients
+		for (Vector[] c : completedClients) {
+			g.setColor(new Color(255, 165, 0, (int) c[2].x));
+			g.fillOval((int) (c[0].x - 2), (int) (c[0].y - 2), 5, 5);
+		}
+
+		// Draw destinations
+		g.setColor(new Color(200, 0, 200, 128));
+		for (Vector d : destinations) {
+			g.fillOval((int) (d.x - TILE_SIZE / 1.5), (int) (d.y - TILE_SIZE / 1.5), (int) (TILE_SIZE / 1.5 * 2),
+					(int) (TILE_SIZE / 1.5 * 2));
 		}
 	}
 
