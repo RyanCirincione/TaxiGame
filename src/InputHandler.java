@@ -68,6 +68,13 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 				selectedTrack = -1;
 			}
 			break;
+		case KeyEvent.VK_5:
+			if (selectedTrack != 4) {
+				selectedTrack = 4;
+			} else {
+				selectedTrack = -1;
+			}
+			break;
 		}
 	}
 
@@ -94,25 +101,43 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		int x = (int) (e.getX() + TaxiGame.camera.x - TaxiGame.S_WIDTH / 2),
 				y = (int) (e.getY() + TaxiGame.camera.y - TaxiGame.S_HEIGHT / 2), TILE = TaxiGame.TILE_SIZE;
-		int xm = x % TILE, ym = y % TILE;
+		int xm = x % TILE, ym = y % TILE, xt = x / TILE, yt = y / TILE;
 
-		if (selectedTrack != -1 && TaxiGame.tracks[x / TILE][y / TILE] == null) {
+		if (selectedTrack != -1 && TaxiGame.tracks[xt][yt] == null) {
+			Track t = null;
+
 			switch (selectedTrack) {
 			case 0:
-				TaxiGame.tracks[x / TILE][y / TILE] = new Track(xm >= ym && xm + ym >= TILE, xm >= ym && xm + ym < TILE,
-						xm < ym && xm + ym < TILE, xm < ym && xm + ym >= TILE);
+				t = new Track(xm >= ym && xm + ym >= TILE, xm >= ym && xm + ym < TILE, xm < ym && xm + ym < TILE,
+						xm < ym && xm + ym >= TILE);
 				break;
 			case 1:
-				TaxiGame.tracks[x / TILE][y / TILE] = new Track(xm >= TILE / 2, ym < TILE / 2, xm < TILE / 2,
-						ym >= TILE / 2);
+				t = new Track(xm >= ym && xm + ym >= TILE, xm >= ym && xm + ym < TILE, xm < ym && xm + ym < TILE,
+						xm < ym && xm + ym >= TILE);
+				t.left = t.right = t.right || t.left;
+				t.down = t.up = t.up || t.down;
 				break;
 			case 2:
-				TaxiGame.tracks[x / TILE][y / TILE] = new Track(xm >= ym || xm + ym >= TILE, xm >= ym || xm + ym < TILE,
-						xm < ym || xm + ym < TILE, xm < ym || xm + ym >= TILE);
+				t = new Track(xm >= TILE / 2, ym < TILE / 2, xm < TILE / 2, ym >= TILE / 2);
 				break;
 			case 3:
-				TaxiGame.tracks[x / TILE][y / TILE] = new Track(true, true, true, true);
+				t = new Track(xm >= ym || xm + ym >= TILE, xm >= ym || xm + ym < TILE, xm < ym || xm + ym < TILE,
+						xm < ym || xm + ym >= TILE);
 				break;
+			case 4:
+				t = new Track(true, true, true, true);
+				break;
+			}
+
+			if ((t.right == (xt + 1 < TaxiGame.tracks.length
+					&& (TaxiGame.tracks[xt + 1][yt] == null || TaxiGame.tracks[xt + 1][yt].left)))
+					&& (t.up == (yt - 1 >= 0
+							&& (TaxiGame.tracks[xt][yt - 1] == null || TaxiGame.tracks[xt][yt - 1].down)))
+					&& (t.left == (xt - 1 >= 0
+							&& (TaxiGame.tracks[xt - 1][yt] == null || TaxiGame.tracks[xt - 1][yt].right)))
+					&& (t.down == (yt + 1 <= TaxiGame.tracks[xt].length
+							&& (TaxiGame.tracks[xt][yt + 1] == null || TaxiGame.tracks[xt][yt + 1].up)))) {
+				TaxiGame.tracks[xt][yt] = t;
 			}
 		}
 	}

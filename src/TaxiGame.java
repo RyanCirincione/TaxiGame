@@ -43,6 +43,7 @@ public class TaxiGame extends JPanel {
 	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64;
 	public static Track[][] tracks;
 	public static Vector camera;
+	int money;
 	InputHandler input;
 	BufferedImage tracksImg;
 	Vector taxiLocation, taxiVelocity;
@@ -50,6 +51,7 @@ public class TaxiGame extends JPanel {
 	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
+		money = 0;
 		completedClients = new ArrayList<Vector[]>();
 		destinations = new ArrayList<Vector>();
 		clients = new ArrayList<Vector>();
@@ -135,6 +137,7 @@ public class TaxiGame extends JPanel {
 					completedClients.add(new Vector[] { taxiLocation.clone(),
 							destinations.get(i).clone().minus(taxiLocation).setLength(0.3), new Vector(255, 0) });
 					destinations.remove(i--);
+					money += (int)(Math.random()* 6) + 15;
 				}
 			}
 		}
@@ -184,14 +187,20 @@ public class TaxiGame extends JPanel {
 			sy = ((xm < ym && xm + ym < TILE_SIZE ? 2 : 0) + (xm < ym && xm + ym >= TILE_SIZE ? 1 : 0));
 			break;
 		case 1:
+			boolean right = xm >= ym && xm + ym >= TILE_SIZE, up = xm >= ym && xm + ym < TILE_SIZE,
+					left = xm < ym && xm + ym < TILE_SIZE, down = xm < ym && xm + ym >= TILE_SIZE;
+			sx = ((up || down ? 2 : 0) + (right || left ? 1 : 0));
+			sy = ((right || left ? 2 : 0) + (up || down ? 1 : 0));
+			break;
+		case 2:
 			sx = ((ym < TILE_SIZE / 2 ? 2 : 0) + (xm >= TILE_SIZE / 2 ? 1 : 0));
 			sy = ((xm < TILE_SIZE / 2 ? 2 : 0) + (ym >= TILE_SIZE / 2 ? 1 : 0));
 			break;
-		case 2:
+		case 3:
 			sx = ((xm >= ym || xm + ym < TILE_SIZE ? 2 : 0) + (xm >= ym || xm + ym >= TILE_SIZE ? 1 : 0));
 			sy = ((xm < ym || xm + ym < TILE_SIZE ? 2 : 0) + (xm < ym || xm + ym >= TILE_SIZE ? 1 : 0));
 			break;
-		case 3:
+		case 4:
 			sx = 3;
 			sy = 3;
 			break;
@@ -235,6 +244,10 @@ public class TaxiGame extends JPanel {
 					(int) (d.y - TILE_SIZE / 1.5 + S_HEIGHT / 2 - camera.y), (int) (TILE_SIZE / 1.5 * 2),
 					(int) (TILE_SIZE / 1.5 * 2));
 		}
+		
+		//Draw money
+		g.setColor(new Color(20, 20, 20));
+		g.drawString("$" + money, 5, 13);
 	}
 
 	private void movementHell() {
