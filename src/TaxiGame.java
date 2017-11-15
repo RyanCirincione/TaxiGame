@@ -40,18 +40,19 @@ public class TaxiGame extends JPanel {
 		}, 0, 1000 / 60);
 	}
 
-	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64;
+	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static Track[][] tracks;
 	public static Vector camera;
-	int money;
+	int money, income, trackInvestment;
 	InputHandler input;
 	BufferedImage tracksImg;
 	Vector taxiLocation, taxiVelocity;
-	ArrayList<Vector> clients, destinations;
+	ArrayList<Vector> clients, destinations, trackShops;
 	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
-		money = 0;
+		trackShops = new ArrayList<Vector>();
+		income = money = trackInvestment = 0;
 		completedClients = new ArrayList<Vector[]>();
 		destinations = new ArrayList<Vector>();
 		clients = new ArrayList<Vector>();
@@ -75,8 +76,9 @@ public class TaxiGame extends JPanel {
 				}
 			}
 		}
-		
+
 		tracks[10][7] = new Track(true, true, true, true);
+		trackShops.add(new Vector(11 * TILE_SIZE / 2 - 15, 13 * TILE_SIZE / 2 - 15));
 
 		try {
 			tracksImg = ImageIO.read(new File("res/tracks.png"));
@@ -137,7 +139,7 @@ public class TaxiGame extends JPanel {
 					completedClients.add(new Vector[] { taxiLocation.clone(),
 							destinations.get(i).clone().minus(taxiLocation).setLength(0.3), new Vector(255, 0) });
 					destinations.remove(i--);
-					money += (int)(Math.random()* 6) + 15;
+					income += (int) (Math.random() * 6) + 15;
 				}
 			}
 		}
@@ -154,6 +156,24 @@ public class TaxiGame extends JPanel {
 
 		// Adjust camera
 		camera = camera.add(taxiLocation.minus(camera).scale(0.05));
+
+		// Receive money
+		money += Math.signum(income -= Math.signum(income));
+
+		// Put money in track shops
+		for (Vector v : trackShops) {
+			if (taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+				if (money > 0) {
+					money--;
+					trackInvestment++;
+				}
+			}
+		}
+
+		if (trackInvestment >= TRACK_PRICE) {
+			trackInvestment -= TRACK_PRICE;
+			// TODO Give benefit for buying track
+		}
 	}
 
 	public void paintComponent(Graphics gr) {
@@ -244,8 +264,21 @@ public class TaxiGame extends JPanel {
 					(int) (d.y - TILE_SIZE / 1.5 + S_HEIGHT / 2 - camera.y), (int) (TILE_SIZE / 1.5 * 2),
 					(int) (TILE_SIZE / 1.5 * 2));
 		}
-		
-		//Draw money
+
+		// Draw shops
+		g.setColor(new Color(25, 0, 255));
+		for (Vector v : trackShops) {
+			g.fillOval((int) (v.x - 5 + S_WIDTH / 2 - camera.x), (int) (v.y - 5 + S_HEIGHT / 2 - camera.y), 10, 10);
+			g.drawOval((int) (v.x - 25 + S_WIDTH / 2 - camera.x), (int) (v.y - 25 + S_HEIGHT / 2 - camera.y), 50, 50);
+
+			if (taxiLocation.distance2(v) < 150 * 150) {
+				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
+				g.drawString("$" + (TRACK_PRICE - trackInvestment), (int) (v.x - 15 + S_WIDTH / 2 - camera.x),
+						(int) (v.y - 8 + S_HEIGHT / 2 - camera.y));
+			}
+		}
+
+		// Draw money
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
 	}
@@ -323,9 +356,9 @@ public class TaxiGame extends JPanel {
 				taxiVelocity.x = 0;
 				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 			}
-			
-			//Block movement right if there is no track to the right
-			if(tracks[(int)(taxiLocation.x + taxiVelocity.x) / TILE_SIZE][ty] == null) {
+
+			// Block movement right if there is no track to the right
+			if (tracks[(int) (taxiLocation.x + taxiVelocity.x) / TILE_SIZE][ty] == null) {
 				taxiVelocity.x = 0;
 				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE - 0.00001;
 			}
@@ -337,9 +370,9 @@ public class TaxiGame extends JPanel {
 				taxiVelocity.y = 0;
 				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 			}
-			
-			//Block movement up if there is no track to the up
-			if(tracks[tx][(int)(taxiLocation.y + taxiVelocity.y) / TILE_SIZE] == null) {
+
+			// Block movement up if there is no track to the up
+			if (tracks[tx][(int) (taxiLocation.y + taxiVelocity.y) / TILE_SIZE] == null) {
 				taxiVelocity.y = 0;
 				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE;
 			}
@@ -351,9 +384,9 @@ public class TaxiGame extends JPanel {
 				taxiVelocity.x = 0;
 				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 			}
-			
-			//Block movement left if there is no track to the left
-			if(tracks[(int)(taxiLocation.x + taxiVelocity.x) / TILE_SIZE][ty] == null) {
+
+			// Block movement left if there is no track to the left
+			if (tracks[(int) (taxiLocation.x + taxiVelocity.x) / TILE_SIZE][ty] == null) {
 				taxiVelocity.x = 0;
 				taxiLocation.x = (int) (taxiLocation.x / TILE_SIZE) * TILE_SIZE;
 			}
@@ -365,9 +398,9 @@ public class TaxiGame extends JPanel {
 				taxiVelocity.y = 0;
 				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 			}
-			
-			//Block movement down if there is no track to the down
-			if(tracks[tx][(int)(taxiLocation.y + taxiVelocity.y) / TILE_SIZE] == null) {
+
+			// Block movement down if there is no track to the down
+			if (tracks[tx][(int) (taxiLocation.y + taxiVelocity.y) / TILE_SIZE] == null) {
 				taxiVelocity.y = 0;
 				taxiLocation.y = (int) (taxiLocation.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE - 0.00001;
 			}
