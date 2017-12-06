@@ -42,6 +42,7 @@ public class TaxiGame extends JPanel {
 
 	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static Track[][] tracks;
+	public static int[] trackInventory;
 	public static Vector camera;
 	int money, income, trackInvestment;
 	InputHandler input;
@@ -51,8 +52,9 @@ public class TaxiGame extends JPanel {
 	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
+		trackInventory = new int[5];
 		trackShops = new ArrayList<Vector>();
-		income = money = trackInvestment = 0;
+		income = money = trackInvestment = 100;
 		completedClients = new ArrayList<Vector[]>();
 		destinations = new ArrayList<Vector>();
 		clients = new ArrayList<Vector>();
@@ -172,7 +174,7 @@ public class TaxiGame extends JPanel {
 
 		if (trackInvestment >= TRACK_PRICE) {
 			trackInvestment -= TRACK_PRICE;
-			// TODO Give benefit for buying track
+			trackInventory[(int)(Math.random()*trackInventory.length)]++;
 		}
 	}
 
@@ -271,6 +273,7 @@ public class TaxiGame extends JPanel {
 			g.fillOval((int) (v.x - 5 + S_WIDTH / 2 - camera.x), (int) (v.y - 5 + S_HEIGHT / 2 - camera.y), 10, 10);
 			g.drawOval((int) (v.x - 25 + S_WIDTH / 2 - camera.x), (int) (v.y - 25 + S_HEIGHT / 2 - camera.y), 50, 50);
 
+			//TODO Fix design problem: "How do I get the $25?"
 			if (taxiLocation.distance2(v) < 150 * 150) {
 				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
 				g.drawString("$" + (TRACK_PRICE - trackInvestment), (int) (v.x - 15 + S_WIDTH / 2 - camera.x),
@@ -281,6 +284,13 @@ public class TaxiGame extends JPanel {
 		// Draw money
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
+		
+		// Draw track inventory
+		g.drawString("1: " + trackInventory[0], 5, 30);
+		g.drawString("2: " + trackInventory[1], 5, 42);
+		g.drawString("3: " + trackInventory[2], 5, 54);
+		g.drawString("4: " + trackInventory[3], 5, 66);
+		g.drawString("5: " + trackInventory[4], 5, 78);
 	}
 
 	private void movementHell() {

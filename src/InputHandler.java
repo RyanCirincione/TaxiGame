@@ -41,35 +41,35 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			down = false;
 			break;
 		case KeyEvent.VK_1:
-			if (selectedTrack != 0) {
+			if (selectedTrack != 0 && TaxiGame.trackInventory[0] > 0) {
 				selectedTrack = 0;
 			} else {
 				selectedTrack = -1;
 			}
 			break;
 		case KeyEvent.VK_2:
-			if (selectedTrack != 1) {
+			if (selectedTrack != 1 && TaxiGame.trackInventory[1] > 0) {
 				selectedTrack = 1;
 			} else {
 				selectedTrack = -1;
 			}
 			break;
 		case KeyEvent.VK_3:
-			if (selectedTrack != 2) {
+			if (selectedTrack != 2 && TaxiGame.trackInventory[2] > 0) {
 				selectedTrack = 2;
 			} else {
 				selectedTrack = -1;
 			}
 			break;
 		case KeyEvent.VK_4:
-			if (selectedTrack != 3) {
+			if (selectedTrack != 3 && TaxiGame.trackInventory[3] > 0) {
 				selectedTrack = 3;
 			} else {
 				selectedTrack = -1;
 			}
 			break;
 		case KeyEvent.VK_5:
-			if (selectedTrack != 4) {
+			if (selectedTrack != 4 && TaxiGame.trackInventory[4] > 0) {
 				selectedTrack = 4;
 			} else {
 				selectedTrack = -1;
@@ -129,14 +129,29 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 				break;
 			}
 
-			if ((t.right == (xt + 1 < TaxiGame.tracks.length
-					&& (TaxiGame.tracks[xt + 1][yt] == null || TaxiGame.tracks[xt + 1][yt].left)))
-					&& (t.up == (yt - 1 >= 0
-							&& (TaxiGame.tracks[xt][yt - 1] == null || TaxiGame.tracks[xt][yt - 1].down)))
-					&& (t.left == (xt - 1 >= 0
-							&& (TaxiGame.tracks[xt - 1][yt] == null || TaxiGame.tracks[xt - 1][yt].right)))
-					&& (t.down == (yt + 1 <= TaxiGame.tracks[xt].length
-							&& (TaxiGame.tracks[xt][yt + 1] == null || TaxiGame.tracks[xt][yt + 1].up)))) {
+			// if ((t.right == (xt + 1 < TaxiGame.tracks.length
+			// && (TaxiGame.tracks[xt + 1][yt] == null || TaxiGame.tracks[xt +
+			// 1][yt].left)))
+			// && (t.up == (yt - 1 >= 0
+			// && (TaxiGame.tracks[xt][yt - 1] == null || TaxiGame.tracks[xt][yt
+			// - 1].down)))
+			// && (t.left == (xt - 1 >= 0
+			// && (TaxiGame.tracks[xt - 1][yt] == null || TaxiGame.tracks[xt -
+			// 1][yt].right)))
+			// && (t.down == (yt + 1 <= TaxiGame.tracks[xt].length
+			// && (TaxiGame.tracks[xt][yt + 1] == null || TaxiGame.tracks[xt][yt
+			// + 1].up)))) {
+			// TaxiGame.tracks[xt][yt] = t;
+			// }
+
+			if (((xt + 1 >= TaxiGame.tracks.length && !t.right) || (xt + 1 < TaxiGame.tracks.length
+					&& (TaxiGame.tracks[xt + 1][yt] == null || t.right == TaxiGame.tracks[xt + 1][yt].left)))
+					&& ((yt - 1 < 0 && !t.up) || (yt - 1 >= 0
+							&& (TaxiGame.tracks[xt][yt - 1] == null || t.up == TaxiGame.tracks[xt][yt - 1].down)))
+					&& ((xt - 1 < 0 && !t.left) || (xt - 1 >= 0
+							&& (TaxiGame.tracks[xt - 1][yt] == null || t.left == TaxiGame.tracks[xt - 1][yt].right)))
+					&& ((yt + 1 >= TaxiGame.tracks[xt].length && !t.down) || (yt + 1 < TaxiGame.tracks[xt].length
+							&& (TaxiGame.tracks[xt][yt + 1] == null || t.down == TaxiGame.tracks[xt][yt + 1].up)))) {
 				TaxiGame.tracks[xt][yt] = t;
 			}
 		}
