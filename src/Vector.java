@@ -68,7 +68,7 @@ public class Vector {
 	 * @return
 	 */
 	public Vector lerp(Vector v, double distance) {
-		return this.add(v.minus(this).setLength(distance));
+		return this.plus(v.minus(this).setLength(distance));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class Vector {
 	 *            The vector to be added to this
 	 * @return The new vector sum
 	 */
-	public Vector add(Vector v) {
+	public Vector plus(Vector v) {
 		return new Vector(x + v.x, y + v.y);
 	}
 
