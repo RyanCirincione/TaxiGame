@@ -48,7 +48,7 @@ public class TaxiGame extends JPanel {
 	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
-		cameraAngle = Math.PI / 2;
+		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
 		income = money = trackInvestment = 100;
 		completedClients = new ArrayList<Vector[]>();
@@ -89,11 +89,11 @@ public class TaxiGame extends JPanel {
 //			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 //		};
 //		int[][] literalTrack = new int[][] {
-//			{ 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-//			{ 1, 0, 1, 0, 1, 0, 0, 0, 0 },
-//			{ 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-//			{ 1, 0, 1, 0, 1, 0, 0, 0, 0 },
-//			{ 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+//			{ 0, 1, 1, 1, 0, 0, 0, 0, 0 },
+//			{ 0, 1, 0, 1, 0, 0, 0, 0, 0 },
+//			{ 0, 1, 1, 1, 0, 0, 0, 0, 0 },
+//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 //			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 //			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 //			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -128,9 +128,9 @@ public class TaxiGame extends JPanel {
 		// This method is for shoving all the hell that is and will be the
 		// controlling of the taxi's position relative to the tracks
 		try {
-			movementHell();
+			movementController();
 		} catch (NullPointerException e) {
-			System.exit(0);
+			System.out.println("Flew off the rail again!");
 			taxiLocation.set(4.5 * TILE_SIZE, 2.5 * TILE_SIZE);
 		}
 
@@ -297,16 +297,15 @@ public class TaxiGame extends JPanel {
 		g.drawString("$" + money, 5, 13);
 	}
 
-	//FIXME Occasionally the taxi will miss an elbow turn and go straight off the rail
-	private void movementHell() {
-		final boolean HORIZONTALLY_ALIGNED = Math.abs(taxiLocation.y % TILE_SIZE - TILE_SIZE / 2) < 0.0001;
-		final boolean VERTICALLY_ALIGNED = Math.abs(taxiLocation.x % TILE_SIZE - TILE_SIZE / 2) < 0.0001;
+	private void movementController() {
+		// If the taxi ever flies off the rail, make these decimals even smaller as long as the game still functions
+		final boolean HORIZONTALLY_ALIGNED = Math.abs(taxiLocation.y % TILE_SIZE - TILE_SIZE / 2) < 0.00000001;
+		final boolean VERTICALLY_ALIGNED = Math.abs(taxiLocation.x % TILE_SIZE - TILE_SIZE / 2) < 0.00000001;
 		boolean ON_CURVE = !(HORIZONTALLY_ALIGNED || VERTICALLY_ALIGNED);
 		int tx = (int) (taxiLocation.x / TILE_SIZE);
 		int ty = (int) (taxiLocation.y / TILE_SIZE);
 		Vector taxiModTile = new Vector(taxiLocation.x % TILE_SIZE, taxiLocation.y % TILE_SIZE);
 
-		System.out.println(taxiLocation + " " + taxiVelocity + " " + taxiModTile + " " + HORIZONTALLY_ALIGNED + " " + VERTICALLY_ALIGNED + " " + ON_CURVE);
 		double l = taxiVelocity.length();
 		if (input.up) {
 			if (l < MAX_SPEED - ACCELERATION) {
@@ -354,8 +353,6 @@ public class TaxiGame extends JPanel {
 					taxiVelocity.y = Math.sqrt(Math.pow(CURVE_RADIUS, 2) - Math.pow(taxiModTile.x + taxiVelocity.x - (TILE_SIZE / 2 + CURVE_RADIUS), 2)) - CURVE_RADIUS;
 				}
 			} else if (!VERTICALLY_ALIGNED) {
-				if(taxiVelocity.y != 0)
-				System.out.println("Finish turn");
 				taxiVelocity.y = 0;
 			}
 		} else if (VERTICALLY_ALIGNED) {
@@ -372,8 +369,6 @@ public class TaxiGame extends JPanel {
 					taxiVelocity.x = -Math.sqrt(Math.pow(CURVE_RADIUS, 2) - Math.pow(taxiModTile.y + taxiVelocity.y - (TILE_SIZE / 2 + CURVE_RADIUS), 2)) + CURVE_RADIUS;
 				}
 			} else {
-				if(taxiVelocity.x != 0)
-				System.out.println("Finish turn");
 				taxiVelocity.x = 0;
 			}
 		}
