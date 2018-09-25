@@ -38,30 +38,38 @@ public class TaxiGame extends JPanel {
 	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75;
-	public static Track[][] tracks;
+	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
 	public static double cameraAngle;
-	int money, income, trackInvestment;
+	int money, income, trackInvestment, trackStock;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
 	ArrayList<Vector> clients, destinations, trackShops;
 	ArrayList<Vector[]> completedClients;
 
 	public TaxiGame() {
+		trackStock = 0;
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
 		income = money = trackInvestment = 100;
 		completedClients = new ArrayList<Vector[]>();
 		destinations = new ArrayList<Vector>();
 		clients = new ArrayList<Vector>();
-		taxiLocation = new Vector(4.5 * TILE_SIZE, 2.5 * TILE_SIZE);
+		taxiLocation = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
 		camera = taxiLocation.clone();
 		input = new InputHandler();
 		tracks = new Track[30][30];
-		generateCity(tracks);
+		plannedTracks = new Track[30][30];
 
-		trackShops.add(new Vector(11 * TILE_SIZE / 2 - 15, 13 * TILE_SIZE / 2 - 15));
+		trackShops.add(new Vector(5.5 * TILE_SIZE - 15, 5.5 * TILE_SIZE - 15));
+
+		generateCity(plannedTracks);
+		for (int x = 5; x <= 7; x++) {
+			for (int y = 5; y <= 7; y++) {
+				tracks[x][y] = plannedTracks[x][y];
+			}
+		}
 
 		this.setFocusable(true);
 		this.requestFocus();
@@ -79,7 +87,7 @@ public class TaxiGame extends JPanel {
 			movementController();
 		} catch (NullPointerException e) {
 			System.out.println("Flew off the rail again!");
-			taxiLocation.set(4.5 * TILE_SIZE, 2.5 * TILE_SIZE);
+			taxiLocation.set(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		}
 
 		// Always have 4 clients to pick up
@@ -156,7 +164,7 @@ public class TaxiGame extends JPanel {
 
 		if (trackInvestment >= TRACK_PRICE) {
 			trackInvestment -= TRACK_PRICE;
-			// TODO Increment track "stock"
+			trackStock++;
 		}
 	}
 
@@ -244,6 +252,9 @@ public class TaxiGame extends JPanel {
 		// Draw money
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
+
+		// Draw track stock
+		g.drawString("" + trackStock, 5, 25);
 	}
 
 	private void movementController() {
@@ -337,7 +348,16 @@ public class TaxiGame extends JPanel {
 			}
 		}
 
-		taxiLocation = taxiLocation.plus(taxiVelocity);
+		Vector destination = taxiLocation.plus(taxiVelocity);
+		if (tracks[(int) (destination.x / TILE_SIZE)][(int) (destination.y / TILE_SIZE)] == null) {
+			if (trackStock > 0) {
+				tracks[(int) (destination.x / TILE_SIZE)][(int) (destination.y / TILE_SIZE)] = plannedTracks[(int) (destination.x / TILE_SIZE)][(int) (destination.y / TILE_SIZE)];
+				trackStock--;
+			} else {
+				taxiVelocity.setLength(0);
+			}
+		}
+		taxiLocation = destination;
 	}
 
 	private void generateCity(Track[][] tracks) {
