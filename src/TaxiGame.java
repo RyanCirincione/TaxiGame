@@ -355,6 +355,7 @@ public class TaxiGame extends JPanel {
 				trackStock--;
 			} else {
 				taxiVelocity.setLength(0);
+				destination = taxiLocation;
 			}
 		}
 		taxiLocation = destination;
