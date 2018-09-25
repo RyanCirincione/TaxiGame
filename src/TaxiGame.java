@@ -35,9 +35,9 @@ public class TaxiGame extends JPanel {
 		}, 0, 1000 / 60);
 	}
 
-	public static final int S_WIDTH = 800, S_HEIGHT = 600, TILE_SIZE = 64, TRACK_PRICE = 25;
+	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
-	public static final double MAX_SPEED = 3.0, ACCELERATION = 0.05;
+	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75;
 	public static Track[][] tracks;
 	public static Vector camera;
 	public static double cameraAngle;
@@ -58,60 +58,8 @@ public class TaxiGame extends JPanel {
 		taxiVelocity = new Vector();
 		camera = taxiLocation.clone();
 		input = new InputHandler();
-		tracks = new Track[40][40];
-		// @formatter:off
-		int[][] literalTrack = new int[][] {
-			{ 0, 0, 0, 1, 1, 1, 0, 0, 0 },
-			{ 0, 0, 1, 1, 0, 1, 0, 0, 0 },
-			{ 0, 0, 1, 0, 1, 1, 1, 0, 0 },
-			{ 0, 0, 1, 0, 1, 0, 1, 1, 1 },
-			{ 1, 1, 1, 1, 1, 0, 1, 0, 1 },
-			{ 1, 0, 1, 0, 1, 1, 1, 1, 1 },
-			{ 1, 0, 1, 0, 0, 0, 1, 0, 0 },
-			{ 1, 1, 1, 1, 1, 0, 1, 0, 0 },
-			{ 0, 0, 1, 0, 1, 1, 1, 1, 0 },
-			{ 0, 0, 1, 1, 1, 0, 0, 1, 0 },
-			{ 0, 0, 0, 0, 1, 1, 1, 1, 0 },
-			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-		};
-//		int[][] literalTrack = new int[][] {
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-//			{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-//		};
-//		int[][] literalTrack = new int[][] {
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-//			{ 0, 1, 0, 1, 0, 0, 0, 0, 0 },
-//			{ 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//			{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-//		};
-		// @formatter:on
-
-		for (int x = 0; x < literalTrack.length; x++) {
-			for (int y = 0; y < literalTrack[x].length; y++) {
-				if (literalTrack[x][y] != 0) {
-					tracks[x][y] = new Track(x + 1 < literalTrack.length && literalTrack[x + 1][y] == 1, y - 1 >= 0 && literalTrack[x][y - 1] == 1,
-							x - 1 >= 0 && literalTrack[x - 1][y] == 1, y + 1 < literalTrack[x].length && literalTrack[x][y + 1] == 1);
-				}
-			}
-		}
+		tracks = new Track[30][30];
+		generateCity(tracks);
 
 		trackShops.add(new Vector(11 * TILE_SIZE / 2 - 15, 13 * TILE_SIZE / 2 - 15));
 
@@ -212,7 +160,7 @@ public class TaxiGame extends JPanel {
 		}
 	}
 
-	//FIXME Occasional Screen flicker when turning
+	// FIXME Occasional Screen flicker when turning
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
 		super.paintComponent(g);
@@ -220,6 +168,7 @@ public class TaxiGame extends JPanel {
 		// Rotate the camera
 		g.translate(S_WIDTH / 2, S_HEIGHT / 2);
 		g.rotate(cameraAngle);
+		g.scale(SCREEN_SCALE, SCREEN_SCALE);
 
 		// Draw tracks
 		g.setColor(Color.black);
@@ -281,14 +230,14 @@ public class TaxiGame extends JPanel {
 			g.fillOval((int) (v.x - 5 - camera.x), (int) (v.y - 5 - camera.y), 10, 10);
 			g.drawOval((int) (v.x - 25 - camera.x), (int) (v.y - 25 - camera.y), 50, 50);
 
-			// TODO Fix design problem: "How do I get the $25?"
 			if (taxiLocation.distance2(v) < 150 * 150) {
 				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
-				g.drawString("$" + (TRACK_PRICE - trackInvestment), (int) (v.x - 15 - camera.x), (int) (v.y - 8 - camera.y));
+				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20 - camera.x), (int) (v.y - 8 - camera.y));
 			}
 		}
 
 		// Unrotate the camera
+		g.scale(1 / SCREEN_SCALE, 1 / SCREEN_SCALE);
 		g.rotate(-cameraAngle);
 		g.translate(-S_WIDTH / 2, -S_HEIGHT / 2);
 
@@ -298,9 +247,10 @@ public class TaxiGame extends JPanel {
 	}
 
 	private void movementController() {
-		// If the taxi ever flies off the rail, make these decimals even smaller as long as the game still functions
-		final boolean HORIZONTALLY_ALIGNED = Math.abs(taxiLocation.y % TILE_SIZE - TILE_SIZE / 2) < 0.00000001;
-		final boolean VERTICALLY_ALIGNED = Math.abs(taxiLocation.x % TILE_SIZE - TILE_SIZE / 2) < 0.00000001;
+		// If the taxi ever flies off the rail, make these decimals even smaller as long
+		// as the game still functions
+		final boolean HORIZONTALLY_ALIGNED = Math.abs(taxiLocation.y % TILE_SIZE - TILE_SIZE / 2) < 0.0000000001;
+		final boolean VERTICALLY_ALIGNED = Math.abs(taxiLocation.x % TILE_SIZE - TILE_SIZE / 2) < 0.0000000001;
 		boolean ON_CURVE = !(HORIZONTALLY_ALIGNED || VERTICALLY_ALIGNED);
 		int tx = (int) (taxiLocation.x / TILE_SIZE);
 		int ty = (int) (taxiLocation.y / TILE_SIZE);
@@ -388,5 +338,80 @@ public class TaxiGame extends JPanel {
 		}
 
 		taxiLocation = taxiLocation.plus(taxiVelocity);
+	}
+
+	private void generateCity(Track[][] tracks) {
+		for (int x = 0; x < tracks.length; x++) {
+			for (int y = 0; y < tracks[0].length; y++) {
+				tracks[x][y] = new Track(x + 1 < tracks.length, y > 0, x > 0, y + 1 < tracks[0].length);
+			}
+		}
+
+		generateCity(tracks, 0, 0, tracks.length - 1, tracks[0].length - 1);
+
+		for (int x = 0; x < tracks.length; x++) {
+			for (int y = 0; y < tracks[0].length; y++) {
+				while ((tracks[x][y].right ? 1 : 0) + (tracks[x][y].up ? 1 : 0) + (tracks[x][y].left ? 1 : 0) + (tracks[x][y].down ? 1 : 0) <= 1) {
+					switch ((int) (Math.random() * 4)) {
+					case 0:
+						if (x + 1 < tracks.length) {
+							tracks[x][y].right = true;
+							tracks[x + 1][y].left = true;
+						}
+						break;
+					case 1:
+						if (y > 0) {
+							tracks[x][y].up = true;
+							tracks[x][y - 1].down = true;
+						}
+						break;
+					case 2:
+						if (x > 0) {
+							tracks[x][y].left = true;
+							tracks[x - 1][y].right = true;
+						}
+						break;
+					case 3:
+						if (y + 1 < tracks[0].length) {
+							tracks[x][y].down = true;
+							tracks[x][y + 1].up = true;
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	private void generateCity(Track[][] tracks, int x, int y, int x2, int y2) {
+		if (x == x2 || y == y2) {
+			return;
+		}
+
+		int wallX = (int) ((Math.random() + Math.random() + Math.random()) / 3 * (x2 - x) + x), wallY = (int) ((Math.random() + Math.random() + Math.random()) / 3 * (y2 - y) + y);
+		int holeX1 = (int) (Math.random() * (wallX - x) + x), holeX2 = (int) (Math.random() * (x2 - wallX + 1) + wallX), holeY1 = (int) (Math.random() * (wallY - y) + y),
+				holeY2 = (int) (Math.random() * (y2 - wallY + 1) + wallY);
+
+		for (int i = y; i <= y2; i++) {
+			if (i == holeY1 || i == holeY2) {
+				continue;
+			}
+
+			tracks[wallX][i].right = false;
+			tracks[wallX + 1][i].left = false;
+		}
+		for (int i = x; i <= x2; i++) {
+			if (i == holeX1 || i == holeX2) {
+				continue;
+			}
+
+			tracks[i][wallY].down = false;
+			tracks[i][wallY + 1].up = false;
+		}
+
+		generateCity(tracks, x, y, wallX, wallY);
+		generateCity(tracks, wallX + 1, y, x2, wallY);
+		generateCity(tracks, x, wallY + 1, wallX, y2);
+		generateCity(tracks, wallX + 1, wallY + 1, x2, y2);
 	}
 }
