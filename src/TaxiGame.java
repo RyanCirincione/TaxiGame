@@ -41,7 +41,7 @@ public class TaxiGame extends JPanel {
 	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75;
 	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
-	public static double cameraAngle;
+	public static double cameraAngle, visualCameraAngle;
 	public static int money, income, trackInvestment, trackStock;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
@@ -108,6 +108,7 @@ public class TaxiGame extends JPanel {
 		if (taxiVelocity.length() > 0.00001) {
 			cameraAngle = -Math.atan(taxiVelocity.y / taxiVelocity.x) - Math.PI / 2 - (taxiVelocity.x < 0 ? Math.PI : 0);
 		}
+		visualCameraAngle = (visualCameraAngle + cameraAngle % 360) / 2;
 
 		// Adjust camera
 		camera = camera.plus(taxiLocation.minus(camera).scale(0.05));
@@ -138,7 +139,7 @@ public class TaxiGame extends JPanel {
 
 		// Rotate the camera
 		g.translate(S_WIDTH / 2, S_HEIGHT / 2);
-		g.rotate(cameraAngle);
+		g.rotate(visualCameraAngle);
 		g.scale(SCREEN_SCALE, SCREEN_SCALE);
 
 		// Draw tracks
@@ -210,7 +211,7 @@ public class TaxiGame extends JPanel {
 
 		// Unrotate the camera
 		g.scale(1 / SCREEN_SCALE, 1 / SCREEN_SCALE);
-		g.rotate(-cameraAngle);
+		g.rotate(-visualCameraAngle);
 		g.translate(-S_WIDTH / 2, -S_HEIGHT / 2);
 
 		// Draw money
