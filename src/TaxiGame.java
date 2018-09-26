@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,20 +42,18 @@ public class TaxiGame extends JPanel {
 	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
 	public static double cameraAngle;
-	int money, income, trackInvestment, trackStock;
+	public static int money, income, trackInvestment, trackStock;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
-	ArrayList<Vector> clients, destinations, trackShops;
-	ArrayList<Vector[]> completedClients;
+	ArrayList<Vector> trackShops;
+	ArrayList<Customer> customers;
 
 	public TaxiGame() {
 		trackStock = 0;
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
 		income = money = trackInvestment = 100;
-		completedClients = new ArrayList<Vector[]>();
-		destinations = new ArrayList<Vector>();
-		clients = new ArrayList<Vector>();
+		customers = new ArrayList<Customer>();
 		taxiLocation = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
 		camera = taxiLocation.clone();
@@ -91,59 +90,23 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Always have 4 clients to pick up
-		while (clients.size() + destinations.size() < 4) {
-			Vector v = new Vector(Math.random() * tracks.length * TILE_SIZE, Math.random() * tracks[0].length * TILE_SIZE);
-			if (tracks[(int) (v.x / TILE_SIZE)][(int) (v.y / TILE_SIZE)] != null) {
-				clients.add(v);
-			}
+		while (customers.size() < 4) {
+			customers.add(Customer.generateCustomer());
 		}
 
-		// Pick up clients (when moving slowly)
-		if (taxiVelocity.length() < 0.5) {
-			for (int i = 0; i < clients.size(); i++) {
-				double d = taxiLocation.distance2(clients.get(i));
-				if (d < Math.pow(TILE_SIZE * 3 / 4, 2)) {
-					if (d < 5 * 5) {
-						clients.remove(i--);
-						while (true) {
-							Vector v = new Vector(Math.random() * tracks.length * TILE_SIZE, Math.random() * tracks[0].length * TILE_SIZE);
-							if (tracks[(int) (v.x / TILE_SIZE)][(int) (v.y / TILE_SIZE)] != null) {
-								destinations.add(v);
-								break;
-							}
-						}
-					} else {
-						clients.get(i).set(clients.get(i).lerp(taxiLocation, 1));
-					}
-				}
-			}
-		}
-
-		// Drop off clients (when moving slowly)
-		if (taxiVelocity.length() < 0.5) {
-			for (int i = 0; i < destinations.size(); i++) {
-				double d = taxiLocation.distance2(destinations.get(i));
-				if (d < Math.pow(TILE_SIZE / 1.5, 2)) {
-					completedClients.add(new Vector[] { taxiLocation.clone(), destinations.get(i).clone().minus(taxiLocation).setLength(0.3), new Vector(255, 0) });
-					destinations.remove(i--);
-					income += (int) (Math.random() * 6) + 15;
-				}
+		// Update customers
+		Iterator<Customer> iter = customers.iterator();
+		while (iter.hasNext()) {
+			Customer c = iter.next();
+			c.update();
+			if (c.visualFade <= 0) {
+				iter.remove();
 			}
 		}
 
 		// Update camera angle
 		if (taxiVelocity.length() > 0.00001) {
 			cameraAngle = -Math.atan(taxiVelocity.y / taxiVelocity.x) - Math.PI / 2 - (taxiVelocity.x < 0 ? Math.PI : 0);
-		}
-
-		// Update completed clients
-		for (int i = 0; i < completedClients.size(); i++) {
-			completedClients.get(i)[0] = completedClients.get(i)[0].plus(completedClients.get(i)[1]);
-
-			completedClients.get(i)[2].x -= 2.5;
-			if (completedClients.get(i)[2].x <= 0) {
-				completedClients.remove(i--);
-			}
 		}
 
 		// Adjust camera
@@ -214,22 +177,23 @@ public class TaxiGame extends JPanel {
 		g.fillOval((int) (taxiLocation.x - 5 - camera.x), (int) (taxiLocation.y - 5 - camera.y), 10, 10);
 
 		// Draw clients
-		g.setColor(Color.orange);
-		for (Vector c : clients) {
-			g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
-			g.drawOval((int) (c.x - TILE_SIZE * 3 / 4 - camera.x), (int) (c.y - TILE_SIZE * 3 / 4 - camera.y), TILE_SIZE * 3 / 2, TILE_SIZE * 3 / 2);
-		}
+		for (Customer cust : customers) {
+			Vector c = cust.position, d = cust.destination;
 
-		// Draw completed clients
-		for (Vector[] c : completedClients) {
-			g.setColor(new Color(255, 165, 0, (int) c[2].x));
-			g.fillOval((int) (c[0].x - 2 - camera.x), (int) (c[0].y - 2 - camera.y), 5, 5);
-		}
+			if (cust.droppedOff) {
+				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
+				
+				g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
+			} else if (cust.pickedUp) {
+				g.setColor(new Color(200, 0, 200, 128));
+				
+				g.fillOval((int) (d.x - TILE_SIZE / 1.5 - camera.x), (int) (d.y - TILE_SIZE / 1.5 - camera.y), (int) (TILE_SIZE / 1.5 * 2), (int) (TILE_SIZE / 1.5 * 2));
+			} else {
+				g.setColor(Color.orange);
 
-		// Draw destinations
-		g.setColor(new Color(200, 0, 200, 128));
-		for (Vector d : destinations) {
-			g.fillOval((int) (d.x - TILE_SIZE / 1.5 - camera.x), (int) (d.y - TILE_SIZE / 1.5 - camera.y), (int) (TILE_SIZE / 1.5 * 2), (int) (TILE_SIZE / 1.5 * 2));
+				g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
+				g.drawOval((int) (c.x - TILE_SIZE * 3 / 4 - camera.x), (int) (c.y - TILE_SIZE * 3 / 4 - camera.y), TILE_SIZE * 3 / 2, TILE_SIZE * 3 / 2);
+			}
 		}
 
 		// Draw shops
