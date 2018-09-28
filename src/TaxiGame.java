@@ -38,20 +38,21 @@ public class TaxiGame extends JPanel {
 
 	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
-	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75;
+	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0;
 	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
-	public static double cameraAngle, visualCameraAngle;
+	public static double cameraAngle, visualCameraAngle, gas;
 	public static int money, income, trackInvestment, trackStock;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
-	ArrayList<Vector> trackShops;
+	ArrayList<Vector> trackShops, gasStations;
 	ArrayList<Customer> customers;
 
 	public TaxiGame() {
 		trackStock = 0;
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
+		gasStations = new ArrayList<Vector>();
 		income = money = trackInvestment = 100;
 		customers = new ArrayList<Customer>();
 		taxiLocation = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
@@ -60,8 +61,10 @@ public class TaxiGame extends JPanel {
 		input = new InputHandler();
 		tracks = new Track[30][30];
 		plannedTracks = new Track[30][30];
+		gas = MAX_GAS;
 
 		trackShops.add(new Vector(5.5 * TILE_SIZE - 15, 5.5 * TILE_SIZE - 15));
+		gasStations.add(new Vector(6.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
 
 		generateCity(plannedTracks);
 		for (int x = 5; x <= 7; x++) {
@@ -125,10 +128,24 @@ public class TaxiGame extends JPanel {
 				}
 			}
 		}
+		
+		// Buy gas
+		for (Vector v : gasStations) {
+			if (taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+				if (money > 0 && gas < MAX_GAS - 0.5) {
+					money--;
+					gas += 0.3;
+				}
+			}
+		}
 
 		if (trackInvestment >= TRACK_PRICE) {
 			trackInvestment -= TRACK_PRICE;
 			trackStock++;
+		}
+
+		if (gas < 0) {
+			gas = 0;
 		}
 	}
 
@@ -183,11 +200,11 @@ public class TaxiGame extends JPanel {
 
 			if (cust.droppedOff) {
 				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
-				
+
 				g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
 			} else if (cust.pickedUp) {
 				g.setColor(new Color(200, 0, 200, 128));
-				
+
 				g.fillOval((int) (d.x - TILE_SIZE / 1.5 - camera.x), (int) (d.y - TILE_SIZE / 1.5 - camera.y), (int) (TILE_SIZE / 1.5 * 2), (int) (TILE_SIZE / 1.5 * 2));
 			} else {
 				g.setColor(Color.orange);
@@ -208,6 +225,11 @@ public class TaxiGame extends JPanel {
 				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20 - camera.x), (int) (v.y - 8 - camera.y));
 			}
 		}
+		g.setColor(new Color(175, 150, 50));
+		for (Vector v : gasStations) {
+			g.fillOval((int) (v.x - 5 - camera.x), (int) (v.y - 5 - camera.y), 10, 10);
+			g.drawOval((int) (v.x - 25 - camera.x), (int) (v.y - 25 - camera.y), 50, 50);
+		}
 
 		// Unrotate the camera
 		g.scale(1 / SCREEN_SCALE, 1 / SCREEN_SCALE);
@@ -220,6 +242,21 @@ public class TaxiGame extends JPanel {
 
 		// Draw track stock
 		g.drawString("" + trackStock, 5, 25);
+
+		// Draw gas
+		g.setColor(Color.gray);
+		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
+		g.setColor(Color.black);
+		g.drawString("E", 20, S_HEIGHT - 20);
+		g.drawString("F", 94, S_HEIGHT - 20);
+		g.setColor(Color.red);
+		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((MAX_GAS - gas) / MAX_GAS * Math.PI)) + 60, (int) -(40 * Math.sin((MAX_GAS - gas) / MAX_GAS * Math.PI)) + S_HEIGHT - 20);
+		
+		//Draw Game Over
+		if(taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
+			g.setColor(Color.red);
+			g.drawString("Game Over", S_WIDTH / 2 - 50, 20);
+		}
 	}
 
 	private void movementController() {
@@ -233,8 +270,9 @@ public class TaxiGame extends JPanel {
 		Vector taxiModTile = new Vector(taxiLocation.x % TILE_SIZE, taxiLocation.y % TILE_SIZE);
 
 		double l = taxiVelocity.length();
-		if (input.up) {
+		if (input.up && gas > 0) {
 			if (l < MAX_SPEED - ACCELERATION) {
+				gas -= 0.02;
 				taxiVelocity.setLength(l + ACCELERATION);
 			} else {
 				taxiVelocity.setLength(MAX_SPEED);
