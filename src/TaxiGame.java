@@ -1,6 +1,7 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
@@ -43,12 +44,14 @@ public class TaxiGame extends JPanel {
 	public static Vector camera;
 	public static double cameraAngle, visualCameraAngle, gas;
 	public static int money, income, trackInvestment, trackStock;
+	public static boolean paused;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
 	ArrayList<Vector> trackShops, gasStations;
 	ArrayList<Customer> customers;
 
 	public TaxiGame() {
+		paused = false;
 		trackStock = 0;
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
@@ -83,8 +86,8 @@ public class TaxiGame extends JPanel {
 	}
 
 	public void tick() {
-		// This method is for shoving all the hell that is and will be the
-		// controlling of the taxi's position relative to the tracks
+		if (paused) return;
+
 		try {
 			movementController();
 		} catch (NullPointerException e) {
@@ -128,7 +131,7 @@ public class TaxiGame extends JPanel {
 				}
 			}
 		}
-		
+
 		// Buy gas
 		for (Vector v : gasStations) {
 			if (taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
@@ -251,11 +254,21 @@ public class TaxiGame extends JPanel {
 		g.drawString("F", 94, S_HEIGHT - 20);
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((MAX_GAS - gas) / MAX_GAS * Math.PI)) + 60, (int) -(40 * Math.sin((MAX_GAS - gas) / MAX_GAS * Math.PI)) + S_HEIGHT - 20);
-		
-		//Draw Game Over
-		if(taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
+
+		// Draw Game Over
+		if (taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
 			g.setColor(Color.red);
 			g.drawString("Game Over", S_WIDTH / 2 - 50, 20);
+		}
+
+		// Draw pause screen
+		if (paused) {
+			g.setColor(new Color(64, 64, 64, 128));
+			g.fillRect(0, 0, S_WIDTH, S_HEIGHT);
+
+			g.setColor(Color.white);
+			g.setFont(new Font("Comic Sans", Font.BOLD, 48));
+			g.drawString("PAUSED", S_WIDTH / 2 - 100, S_HEIGHT / 2 + 5);
 		}
 	}
 

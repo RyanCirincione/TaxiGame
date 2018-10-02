@@ -20,7 +20,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			left = true;
 			break;
 		case KeyEvent.VK_S:
-			if(!down && TaxiGame.taxiVelocity.length() < 0.0001) {
+			if(!down && TaxiGame.taxiVelocity.length() < 0.0001 && !TaxiGame.paused) {
 				TaxiGame.cameraAngle += Math.PI;
 			}
 			down = true;
@@ -30,6 +30,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 
 	public void keyReleased(KeyEvent e) {
 		switch (e.getKeyCode()) {
+		case KeyEvent.VK_ESCAPE:
+			TaxiGame.paused = !TaxiGame.paused;
 		case KeyEvent.VK_D:
 			right = false;
 			break;
