@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Timer;
@@ -39,10 +40,10 @@ public class TaxiGame extends JPanel {
 
 	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
-	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0;
+	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0, MAX_RATING = 5.0;
 	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
-	public static double cameraAngle, visualCameraAngle, gas;
+	public static double cameraAngle, visualCameraAngle, gas, rating;
 	public static int money, income, trackInvestment, trackStock;
 	public static boolean paused;
 	InputHandler input;
@@ -51,6 +52,7 @@ public class TaxiGame extends JPanel {
 	ArrayList<Customer> customers;
 
 	public TaxiGame() {
+		rating = 3.0;
 		paused = false;
 		trackStock = 0;
 		cameraAngle = 0;
@@ -87,7 +89,7 @@ public class TaxiGame extends JPanel {
 
 	public void tick() {
 		if (paused) return;
-
+		
 		try {
 			movementController();
 		} catch (NullPointerException e) {
@@ -149,6 +151,11 @@ public class TaxiGame extends JPanel {
 
 		if (gas < 0) {
 			gas = 0;
+		}
+		if(rating < 0) {
+			rating = 0;
+		} else if(rating > MAX_RATING) {
+			rating = MAX_RATING;
 		}
 	}
 
@@ -246,6 +253,15 @@ public class TaxiGame extends JPanel {
 		// Draw track stock
 		g.drawString("" + trackStock, 5, 25);
 
+		// Draw rating
+		BufferedImage ratingStars = new BufferedImage(100, 50, BufferedImage.TYPE_INT_ARGB);
+		Graphics starGraphic = ratingStars.getGraphics();
+		for(int i = 0; i < 100; i+=20) {
+			starGraphic.setColor(Color.yellow.darker());
+			starGraphic.fillPolygon(new int[] {i+10, i+13, i+20, i+14, i+17, i+10, i+3, i+6, i, i+7}, new int[] {0, 7, 7, 12, 20, 15, 20, 12, 7, 7}, 10);
+		}
+		g.drawImage(ratingStars, 45, 5, 45 + (int) (100 * rating / MAX_RATING), 55, 0, 0, (int)(100*rating / MAX_RATING), 50, null);
+		
 		// Draw gas
 		g.setColor(Color.gray);
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
