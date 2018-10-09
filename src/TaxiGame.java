@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,15 +47,30 @@ public class TaxiGame extends JPanel {
 	public static Vector camera;
 	public static double cameraAngle, visualCameraAngle, gas, rating;
 	public static int money, income, trackInvestment, trackStock;
-	public static boolean paused;
+	public static boolean paused, mainMenu;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
-	ArrayList<Vector> trackShops, gasStations;
-	ArrayList<Customer> customers;
+	public static ArrayList<Vector> trackShops, gasStations;
+	public static ArrayList<Customer> customers;
+	public static Rectangle newGameButton;
 
 	public TaxiGame() {
-		rating = 3.0;
+		newGameButton = new Rectangle(S_WIDTH / 2 - 100, S_HEIGHT / 2 - 50, 200, 100);
+		mainMenu = true;
+		input = new InputHandler();
+
+		this.setFocusable(true);
+		this.requestFocus();
+		this.addKeyListener(input);
+		this.addMouseListener(input);
+		this.addMouseMotionListener(input);
+
+		this.setPreferredSize(new Dimension(S_WIDTH, S_HEIGHT));
+	}
+
+	public static void startNewGame() {
 		paused = false;
+		rating = 3.0;
 		trackStock = 0;
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
@@ -63,7 +80,6 @@ public class TaxiGame extends JPanel {
 		taxiLocation = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
 		camera = taxiLocation.clone();
-		input = new InputHandler();
 		tracks = new Track[30][30];
 		plannedTracks = new Track[30][30];
 		gas = MAX_GAS;
@@ -77,19 +93,11 @@ public class TaxiGame extends JPanel {
 				tracks[x][y] = plannedTracks[x][y];
 			}
 		}
-
-		this.setFocusable(true);
-		this.requestFocus();
-		this.addKeyListener(input);
-		this.addMouseListener(input);
-		this.addMouseMotionListener(input);
-
-		this.setPreferredSize(new Dimension(S_WIDTH, S_HEIGHT));
 	}
 
 	public void tick() {
-		if (paused) return;
-		
+		if (paused || mainMenu) return;
+
 		try {
 			movementController();
 		} catch (NullPointerException e) {
@@ -152,9 +160,9 @@ public class TaxiGame extends JPanel {
 		if (gas < 0) {
 			gas = 0;
 		}
-		if(rating < 0) {
+		if (rating < 0) {
 			rating = 0;
-		} else if(rating > MAX_RATING) {
+		} else if (rating > MAX_RATING) {
 			rating = MAX_RATING;
 		}
 	}
@@ -163,6 +171,18 @@ public class TaxiGame extends JPanel {
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
 		super.paintComponent(g);
+
+		// Draw main menu
+		if (mainMenu) {
+			Stroke oldStroke = g.getStroke();
+			g.setStroke(new BasicStroke(3));
+			g.setColor(Color.green);
+			g.drawRect(newGameButton.x, newGameButton.y, newGameButton.width, newGameButton.height);
+			g.drawString("START GAME", newGameButton.x + newGameButton.width / 2 - 42, newGameButton.y + newGameButton.height / 2 + 6);
+			g.setStroke(oldStroke);
+
+			return;
+		}
 
 		// Rotate the camera
 		g.translate(S_WIDTH / 2, S_HEIGHT / 2);
@@ -256,12 +276,12 @@ public class TaxiGame extends JPanel {
 		// Draw rating
 		BufferedImage ratingStars = new BufferedImage(100, 50, BufferedImage.TYPE_INT_ARGB);
 		Graphics starGraphic = ratingStars.getGraphics();
-		for(int i = 0; i < 100; i+=20) {
+		for (int i = 0; i < 100; i += 20) {
 			starGraphic.setColor(Color.yellow.darker());
-			starGraphic.fillPolygon(new int[] {i+10, i+13, i+20, i+14, i+17, i+10, i+3, i+6, i, i+7}, new int[] {0, 7, 7, 12, 20, 15, 20, 12, 7, 7}, 10);
+			starGraphic.fillPolygon(new int[] { i + 10, i + 13, i + 20, i + 14, i + 17, i + 10, i + 3, i + 6, i, i + 7 }, new int[] { 0, 7, 7, 12, 20, 15, 20, 12, 7, 7 }, 10);
 		}
-		g.drawImage(ratingStars, 45, 5, 45 + (int) (100 * rating / MAX_RATING), 55, 0, 0, (int)(100*rating / MAX_RATING), 50, null);
-		
+		g.drawImage(ratingStars, 45, 5, 45 + (int) (100 * rating / MAX_RATING), 55, 0, 0, (int) (100 * rating / MAX_RATING), 50, null);
+
 		// Draw gas
 		g.setColor(Color.gray);
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
@@ -274,7 +294,7 @@ public class TaxiGame extends JPanel {
 		// Draw Game Over
 		if (taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
 			g.setColor(Color.red);
-			g.drawString("Game Over", S_WIDTH / 2 - 50, 20);
+			g.drawString("Game Over (Press SPACE to return to menu)", S_WIDTH / 2 - 140, 20);
 		}
 
 		// Draw pause screen
@@ -393,7 +413,7 @@ public class TaxiGame extends JPanel {
 		taxiLocation = destination;
 	}
 
-	private void generateCity(Track[][] tracks) {
+	private static void generateCity(Track[][] tracks) {
 		for (int x = 0; x < tracks.length; x++) {
 			for (int y = 0; y < tracks[0].length; y++) {
 				tracks[x][y] = new Track(x + 1 < tracks.length, y > 0, x > 0, y + 1 < tracks[0].length);
@@ -436,7 +456,7 @@ public class TaxiGame extends JPanel {
 		}
 	}
 
-	private void generateCity(Track[][] tracks, int x, int y, int x2, int y2) {
+	private static void generateCity(Track[][] tracks, int x, int y, int x2, int y2) {
 		if (x == x2 || y == y2) {
 			return;
 		}
