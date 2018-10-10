@@ -237,7 +237,7 @@ public class TaxiGame extends JPanel {
 
 				g.fillOval((int) (d.x - TILE_SIZE / 1.5 - camera.x), (int) (d.y - TILE_SIZE / 1.5 - camera.y), (int) (TILE_SIZE / 1.5 * 2), (int) (TILE_SIZE / 1.5 * 2));
 			} else {
-				g.setColor(Color.orange);
+				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 
 				g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
 				g.drawOval((int) (c.x - TILE_SIZE * 3 / 4 - camera.x), (int) (c.y - TILE_SIZE * 3 / 4 - camera.y), TILE_SIZE * 3 / 2, TILE_SIZE * 3 / 2);
