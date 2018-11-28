@@ -75,7 +75,9 @@ public class TaxiGame extends JPanel {
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
 		gasStations = new ArrayList<Vector>();
-		income = money = trackInvestment = 100;
+		income = 50;
+		money = 0;
+		trackInvestment = 0;
 		customers = new ArrayList<Customer>();
 		taxiLocation = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxiVelocity = new Vector();
@@ -240,7 +242,8 @@ public class TaxiGame extends JPanel {
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 
 				g.fillOval((int) (c.x - 2 - camera.x), (int) (c.y - 2 - camera.y), 5, 5);
-				g.drawOval((int) (c.x - TILE_SIZE * 3 / 4 - camera.x), (int) (c.y - TILE_SIZE * 3 / 4 - camera.y), TILE_SIZE * 3 / 2, TILE_SIZE * 3 / 2);
+				g.drawOval((int) (c.x - Customer.PICKUP_RADIUS - camera.x), (int) (c.y - Customer.PICKUP_RADIUS - camera.y), (int) (Customer.PICKUP_RADIUS * 2),
+						(int) (Customer.PICKUP_RADIUS * 2));
 			}
 		}
 
