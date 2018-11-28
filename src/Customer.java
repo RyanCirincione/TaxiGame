@@ -27,7 +27,7 @@ public class Customer {
 
 					// Occasionally, create a destination slightly outside the city to force the
 					// player to expand
-					if (Math.random() < 0.1) {
+					if (Math.random() < 0.3) {
 						Vector newDestination = new Vector(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length,
 								Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 						int expansionRange = 2 + (int) (Math.random() * 2);
