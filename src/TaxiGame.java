@@ -169,7 +169,6 @@ public class TaxiGame extends JPanel {
 		}
 	}
 
-	// FIXME Occasional Screen flicker when turning
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
 		super.paintComponent(g);
