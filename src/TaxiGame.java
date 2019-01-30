@@ -56,10 +56,10 @@ public class TaxiGame extends JPanel {
 	
 	// zoom variables
 	public static double zoom = 1, visualZoom = 100;
-	public static final double MIN_ZOOM = 0.5, MAX_ZOOM = 2;
+	public static final double MIN_ZOOM = 0.25, MAX_ZOOM = 2;
 	// fun stuff
 	public static double cloudZoom = 0.5;
-	public static int numClouds = 50;
+	public static int numClouds = 30;
 	public static Cloud[] clouds;
 
 	public TaxiGame() {
@@ -98,8 +98,9 @@ public class TaxiGame extends JPanel {
 		gasStations.add(new Vector(6.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
 
 		generateCity(plannedTracks);
-		for (int x = 5; x <= 7; x++) {
-			for (int y = 5; y <= 7; y++) {
+		//5 and 7
+		for (int x = 0; x <= 29; x++) {
+			for (int y = 0; y <= 29; y++) {
 				tracks[x][y] = plannedTracks[x][y];
 			}
 		}
@@ -225,38 +226,31 @@ public class TaxiGame extends JPanel {
 
 		// Draw tracks
 		g.setColor(Color.black);
-		g.setStroke(new BasicStroke(2));
+		g.setStroke(new BasicStroke((int)(2*visualZoom)));
+		final double TS = TILE_SIZE;
+		final double CR = CURVE_RADIUS;
 		for (int x = 0; x < tracks.length; x++) {
 			for (int y = 0; y < tracks[x].length; y++) {
 				if (tracks[x][y] != null) {
-					final double TS = TILE_SIZE/(1/visualZoom);
-					if (tracks[x][y].right) g.drawLine((int) (x * TS + TS / 2 + visualZoom*CURVE_RADIUS - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y), (int) ((x + 1) * TS - visualZoom*camera.x),
-							(int) (y * TS + TS / 2 - visualZoom*camera.y));
-					if (tracks[x][y].up) g.drawLine((int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*CURVE_RADIUS - visualZoom*camera.y), (int) (x * TS + TS / 2 - visualZoom*camera.x),
-							(int) (y * TS - visualZoom*camera.y));
-					if (tracks[x][y].left) g.drawLine((int) (x * TS + TS / 2 - visualZoom*CURVE_RADIUS - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y), (int) (x * TS - visualZoom*camera.x),
-							(int) (y * TS + TS / 2 - visualZoom*camera.y));
-					if (tracks[x][y].down) g.drawLine((int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 + visualZoom*CURVE_RADIUS - visualZoom*camera.y), (int) (x * TS + TS / 2 - visualZoom*camera.x),
-							(int) ((y + 1) * TS - visualZoom*camera.y));
-					if (tracks[x][y].right && tracks[x][y].left) g.drawLine((int) (x * TS + TS / 2 + visualZoom*CURVE_RADIUS - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y),
-							(int) (x * TS + TS / 2 - visualZoom*CURVE_RADIUS - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y));
-					if (tracks[x][y].up && tracks[x][y].down) g.drawLine((int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*CURVE_RADIUS - visualZoom*camera.y),
-							(int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 + visualZoom*CURVE_RADIUS - visualZoom*camera.y));
-					if (tracks[x][y].right && tracks[x][y].up) g.drawArc((int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*CURVE_RADIUS * 2 - visualZoom*camera.y),
-							(int) (visualZoom*CURVE_RADIUS * 2), (int) (visualZoom*CURVE_RADIUS * 2), -90, -90);
-					if (tracks[x][y].up && tracks[x][y].left) g.drawArc((int) (x * TS + TS / 2 - visualZoom*CURVE_RADIUS * 2 - visualZoom*camera.x),
-							(int) (y * TS + TS / 2 - visualZoom*CURVE_RADIUS * 2 - visualZoom*camera.y), (int) (visualZoom*CURVE_RADIUS * 2), (int) (visualZoom*CURVE_RADIUS * 2), 0, -90);
-					if (tracks[x][y].left && tracks[x][y].down) g.drawArc((int) (x * TS + TS / 2 - visualZoom*CURVE_RADIUS * 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y),
-							(int) (visualZoom*CURVE_RADIUS * 2), (int) (visualZoom*CURVE_RADIUS * 2), 90, -90);
-					if (tracks[x][y].down && tracks[x][y].right)
-						g.drawArc((int) (x * TS + TS / 2 - visualZoom*camera.x), (int) (y * TS + TS / 2 - visualZoom*camera.y), (int) (visualZoom*CURVE_RADIUS * 2), (int) (visualZoom*CURVE_RADIUS * 2), 180, -90);
+					double drawX1 = x * TS + TS / 2 - camera.x;
+					double drawY1 = y * TS + TS / 2 - camera.y;
+					if (tracks[x][y].right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS - camera.x, drawY1);
+					if (tracks[x][y].up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS - camera.y);
+					if (tracks[x][y].left) drawMapLine(g, drawX1 - CR, drawY1, x * TS - camera.x, drawY1);
+					if (tracks[x][y].down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS - camera.y);
+					if (tracks[x][y].right && tracks[x][y].left) drawMapLine(g, drawX1 + CR, drawY1, drawX1 - CR, drawY1);
+					if (tracks[x][y].up && tracks[x][y].down) drawMapLine(g, drawX1, drawY1 - CR, drawX1, drawY1 + CR);
+					if (tracks[x][y].right && tracks[x][y].up) drawMapArc(g, drawX1, drawY1 - CR*2, CR*2, CR*2, -90, -90);
+					if (tracks[x][y].up && tracks[x][y].left) drawMapArc(g, drawX1 - CR*2, drawY1 - CR*2, CR*2, CR*2, 0, -90);
+					if (tracks[x][y].left && tracks[x][y].down) drawMapArc(g, drawX1 - CR*2, drawY1, CR*2, CR*2, 90, -90);
+					if (tracks[x][y].down && tracks[x][y].right) drawMapArc(g, drawX1, drawY1, CR*2, CR*2, 180, -90);
 				}
 			}
 		}
 
 		// Draw taxi
 		g.setColor(Color.yellow);
-		g.fillOval((int) (visualZoom*taxiLocation.x - visualZoom*5 - visualZoom*camera.x), (int) (visualZoom*taxiLocation.y - visualZoom*5 - visualZoom*camera.y), (int)(visualZoom*10), (int)(visualZoom*10));
+		drawMapOval(g, taxiLocation.x, taxiLocation.y, 10, 10, true);
 
 		// Draw clients
 		for (Customer cust : customers) {
@@ -264,27 +258,23 @@ public class TaxiGame extends JPanel {
 
 			if (cust.droppedOff) {
 				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
-
-				g.fillOval((int) (visualZoom*c.x - visualZoom*2 - visualZoom*camera.x), (int) (visualZoom*c.y - visualZoom*2 - visualZoom*camera.y), (int)(visualZoom*5), (int)(visualZoom*5));
+				drawMapOval(g, c.x, c.y, 5, 5, true);
 			} else if (cust.pickedUp) {
 				g.setColor(new Color(200, 0, 200, 128));
-
-				g.fillOval((int) (visualZoom*d.x - visualZoom*TILE_SIZE / 1.5 - visualZoom*camera.x), (int) (visualZoom*d.y - visualZoom*TILE_SIZE / 1.5 - visualZoom*camera.y), (int) (visualZoom*TILE_SIZE / 1.5 * 2), (int) (visualZoom*TILE_SIZE / 1.5 * 2));
+				drawMapOval(g, d.x, d.y, TILE_SIZE / 1.5 * 2, TILE_SIZE / 1.5 * 2, true);
 			} else {
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
-
-				g.fillOval((int) (visualZoom*c.x - visualZoom*2 - visualZoom*camera.x), (int) (visualZoom*c.y - visualZoom*2 - visualZoom*camera.y), (int)(visualZoom*5), (int)(visualZoom*5));
-				g.drawOval((int) (visualZoom*c.x - visualZoom*Customer.PICKUP_RADIUS - visualZoom*camera.x), (int) (visualZoom*c.y - visualZoom*Customer.PICKUP_RADIUS - visualZoom*camera.y), (int) (visualZoom*Customer.PICKUP_RADIUS * 2),
-						(int) (visualZoom*Customer.PICKUP_RADIUS * 2));
+				drawMapOval(g, c.x, c.y, 5, 5, true);
+				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS*2, Customer.PICKUP_RADIUS*2, false);
 			}
 		}
 
 		// Draw shops
 		g.setColor(new Color(25, 0, 255));
 		for (Vector v : trackShops) {
-			g.fillOval((int) (visualZoom*v.x - visualZoom*5 - visualZoom*camera.x), (int) (visualZoom*v.y - visualZoom*5 - visualZoom*camera.y), (int)(visualZoom*10), (int)(visualZoom*10));
-			g.drawOval((int) (visualZoom*v.x - visualZoom*25 - visualZoom*camera.x), (int) (visualZoom*v.y - visualZoom*25 - visualZoom*camera.y), (int)(visualZoom*50), (int)(visualZoom*50));
-
+			drawMapOval(g, v.x, v.y, 10, 10, true);
+			drawMapOval(g, v.x, v.y, 50, 50, false);
+			
 			if (taxiLocation.distance2(v) < 150 * 150) {
 				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
 				g.drawString("$" + trackInvestment + "/$25", (int) (visualZoom*v.x - visualZoom*20 - visualZoom*camera.x), (int) (visualZoom*v.y - visualZoom*8 - visualZoom*camera.y));
@@ -292,26 +282,19 @@ public class TaxiGame extends JPanel {
 		}
 		g.setColor(new Color(175, 150, 50));
 		for (Vector v : gasStations) {
-			g.fillOval((int) (visualZoom*v.x - visualZoom*5 - visualZoom*camera.x), (int) (visualZoom*v.y - visualZoom*5 - visualZoom*camera.y), (int)(visualZoom*10), (int)(visualZoom*10));
-			g.drawOval((int) (visualZoom*v.x - visualZoom*25 - visualZoom*camera.x), (int) (visualZoom*v.y - visualZoom*25 - visualZoom*camera.y), (int)(visualZoom*50), (int)(visualZoom*50));
+			drawMapOval(g, v.x, v.y, 10, 10, true);
+			drawMapOval(g, v.x, v.y, 50, 50, false);
 		}
 		
 		// fun stuff
-		if (visualZoom <= MIN_ZOOM + 0.25 + 0.05) {
-			double thisZoom = cloudZoom * visualZoom;
-			g.setColor(new Color(255, 255, 255, 100));
-			for (int i=0; i<numClouds; i++) {
-				if (clouds[i].actuallyBird) {
-					g.setColor(new Color(0, 0, 0, 255));					
-				}
-				else if (visualZoom <= MIN_ZOOM + 0.05) {
-					g.setColor(new Color(255, 255, 255, 50));
-				}
-				else {
-					continue;
-				}
-				g.fillOval((int) (thisZoom*clouds[i].x - thisZoom*clouds[i].size - thisZoom*camera.x), (int) (thisZoom*clouds[i].y - thisZoom*clouds[i].size - thisZoom*camera.y), (int)(thisZoom*clouds[i].size), (int)(thisZoom*clouds[i].size));
+		for (int i=0; i<numClouds; i++) {
+			if (clouds[i].actuallyBird) {
+				g.setColor(new Color(0, 0, 0, 255));					
 			}
+			else {
+				g.setColor(new Color(255, 255, 255, 150));
+			}
+			drawMapOval(g, clouds[i].x, clouds[i].y, clouds[i].size, clouds[i].size, clouds[i].myZoom, true);
 		}
 
 		// Unrotate the camera
@@ -539,6 +522,40 @@ public class TaxiGame extends JPanel {
 		generateCity(tracks, wallX + 1, y, x2, wallY);
 		generateCity(tracks, x, wallY + 1, wallX, y2);
 		generateCity(tracks, wallX + 1, wallY + 1, x2, y2);
+	}
+	
+	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2) {
+		drawMapLine(graphics, lineX1, lineY1, lineX2, lineY2, 1);
+	}
+	
+	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2, double zoomLevel) {
+		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
+		double finalZoom = zoomLevel * visualZoom;
+		graphics.drawLine((int) (finalZoom*lineX1), (int) (finalZoom*lineY1), (int) (finalZoom*lineX2), (int) (finalZoom*lineY2));
+	}
+	
+	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng) {
+		drawMapArc(graphics, arcX, arcY, arcW, arcH, startAng, endAng, 1);
+	}
+	
+	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng, double zoomLevel) {
+		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
+		double finalZoom = zoomLevel * visualZoom;
+		graphics.drawArc((int) (finalZoom*arcX), (int) (finalZoom*arcY), (int) (finalZoom*arcW), (int) (finalZoom*arcH), (int) (startAng), (int) (endAng)); 
+	}
+	
+	//for ovals, ovalX and ovalY are the center of the oval. They also take a boolean "fill" that determines if the oval is filled in or just an outline
+	private static void drawMapOval(Graphics2D graphics, double ovalX, double ovalY, double ovalW, double ovalH, boolean fill) {
+		drawMapOval(graphics, ovalX, ovalY, ovalW, ovalH, 1, fill);
+	}
+	
+	private static void drawMapOval(Graphics2D graphics, double ovalX, double ovalY, double ovalW, double ovalH, double zoomLevel, boolean fill) {
+		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
+		double finalZoom = zoomLevel * visualZoom;
+		if (fill)
+			graphics.fillOval((int) (finalZoom * (ovalX - ovalW/2 - camera.x)), (int) (finalZoom * (ovalY - ovalH/2 - camera.y)), (int) (finalZoom * ovalW/2 * 2), (int) (finalZoom * ovalH/2 * 2));
+		else
+			graphics.drawOval((int) (finalZoom * (ovalX - ovalW/2 - camera.x)), (int) (finalZoom * (ovalY - ovalH/2 - camera.y)), (int) (finalZoom * ovalW/2 * 2), (int) (finalZoom * ovalH/2 * 2));
 	}
 }
 
