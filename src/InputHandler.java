@@ -38,6 +38,25 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 				TaxiGame.mainMenu = true;
 			}
 			break;
+		case KeyEvent.VK_R:
+			TaxiGame.mainMenu = false;
+			TaxiGame.startNewGame();
+			break;
+		case KeyEvent.VK_BACK_SPACE:
+			TaxiGame.mainMenu = true;
+			break;
+		case KeyEvent.VK_Z:
+			if (TaxiGame.zoom < TaxiGame.MAX_ZOOM) TaxiGame.zoom += 0.25;
+			break;
+		case KeyEvent.VK_X:
+			if (TaxiGame.zoom > TaxiGame.MIN_ZOOM) TaxiGame.zoom -= 0.25;  
+			break;
+		case KeyEvent.VK_C:
+			TaxiGame.zoom = 1;
+			break;
+		case KeyEvent.VK_V:
+			TaxiGame.zoom = TaxiGame.MIN_ZOOM;
+			break;
 		case KeyEvent.VK_D:
 			right = false;
 			break;
