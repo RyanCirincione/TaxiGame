@@ -42,7 +42,10 @@ public class TaxiGame extends JPanel {
 
 	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
-	public static final double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0, MAX_RATING = 5.0;
+	public static double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0, MAX_RATING = 5.0, FRICTION = 0.997;
+	public static final double START_MAX_SPEED = MAX_SPEED, START_ACCELERATION = ACCELERATION, START_MAX_GAS = MAX_GAS, START_FRICTION = FRICTION;
+	public static final double MAX_MAX_SPEED = 10, MAX_ACCELERATION = 10, MAX_MAX_GAS = 40.0, MAX_FRICTION = 1;
+	public static int money_in_speed = 0, money_in_acceleration = 0, money_in_gas = 0, money_in_friction = 0;
 	public static Track[][] tracks, plannedTracks;
 	public static Vector camera;
 	public static double cameraAngle, visualCameraAngle, gas, rating;
@@ -50,7 +53,7 @@ public class TaxiGame extends JPanel {
 	public static boolean paused, mainMenu;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
-	public static ArrayList<Vector> trackShops, gasStations;
+	public static ArrayList<Vector> trackShops, gasStations, upgradeShops;
 	public static ArrayList<Customer> customers;
 	public static Rectangle newGameButton;
 	
@@ -83,6 +86,7 @@ public class TaxiGame extends JPanel {
 		cameraAngle = 0;
 		trackShops = new ArrayList<Vector>();
 		gasStations = new ArrayList<Vector>();
+		upgradeShops = new ArrayList<Vector>();
 		income = 50;
 		money = 0;
 		trackInvestment = 0;
@@ -92,15 +96,22 @@ public class TaxiGame extends JPanel {
 		camera = taxiLocation.clone();
 		tracks = new Track[30][30];
 		plannedTracks = new Track[30][30];
+		MAX_SPEED = START_MAX_SPEED;
+		ACCELERATION = START_ACCELERATION;
+		MAX_GAS = START_MAX_GAS;
+		FRICTION = START_FRICTION;
 		gas = MAX_GAS;
 
 		trackShops.add(new Vector(5.5 * TILE_SIZE - 15, 5.5 * TILE_SIZE - 15));
 		gasStations.add(new Vector(6.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
+		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 4.5 * TILE_SIZE + 15));
+		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 5.5 * TILE_SIZE + 15));
+		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
+		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 7.5 * TILE_SIZE + 15));
 
 		generateCity(plannedTracks);
-		//5 and 7
-		for (int x = 0; x <= 29; x++) {
-			for (int y = 0; y <= 29; y++) {
+		for (int x = 5; x <= 7; x++) {
+			for (int y = 5; y <= 7; y++) {
 				tracks[x][y] = plannedTracks[x][y];
 			}
 		}
@@ -186,6 +197,37 @@ public class TaxiGame extends JPanel {
 					gas += 0.3;
 				}
 			}
+		}
+		
+		// Buy upgrades
+		Vector v;
+		// top speed
+		v = upgradeShops.get(0);
+		if (money > 0 && taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+			money--;
+			money_in_speed++;
+			MAX_SPEED = -(MAX_MAX_SPEED-START_MAX_SPEED)/(.01*money_in_speed+1)+MAX_MAX_SPEED;
+		}
+		// acceleration
+		v = upgradeShops.get(1);
+		if (money > 0 && taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+			money--;
+			money_in_acceleration++;
+			ACCELERATION = -(MAX_ACCELERATION-START_ACCELERATION)/(.01*money_in_acceleration+1)+MAX_ACCELERATION;
+		}
+		// max gas
+		v = upgradeShops.get(2);
+		if (money > 0 && taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+			money--;
+			money_in_gas++;
+			MAX_GAS = -(MAX_MAX_GAS-START_MAX_GAS)/(.01*money_in_gas+1)+MAX_MAX_GAS;
+		}
+		// friction
+		v = upgradeShops.get(3);
+		if (money > 0 && taxiLocation.distance2(v) <= 25 * 25 && taxiVelocity.length() < 0.5) {
+			money--;
+			money_in_friction++;
+			FRICTION = -(MAX_FRICTION-START_FRICTION)/(.01*money_in_friction+1)+MAX_FRICTION;
 		}
 
 		if (trackInvestment >= TRACK_PRICE) {
@@ -285,6 +327,28 @@ public class TaxiGame extends JPanel {
 			drawMapOval(g, v.x, v.y, 10, 10, true);
 			drawMapOval(g, v.x, v.y, 50, 50, false);
 		}
+		// upgrade shops
+		Vector v;
+		// top speed
+		v = upgradeShops.get(0);
+		g.setColor(Color.green);
+		drawMapOval(g, v.x, v.y, 10, 10, true);
+		drawMapOval(g, v.x, v.y, 50, 50, false);
+		// acceleration
+		v = upgradeShops.get(1);
+		g.setColor(Color.red);
+		drawMapOval(g, v.x, v.y, 10, 10, true);
+		drawMapOval(g, v.x, v.y, 50, 50, false);
+		// max gas
+		v = upgradeShops.get(2);
+		g.setColor(Color.pink);
+		drawMapOval(g, v.x, v.y, 10, 10, true);
+		drawMapOval(g, v.x, v.y, 50, 50, false);
+		// friction
+		v = upgradeShops.get(3);
+		g.setColor(Color.magenta);
+		drawMapOval(g, v.x, v.y, 10, 10, true);
+		drawMapOval(g, v.x, v.y, 50, 50, false);
 		
 		// fun stuff
 		for (int i=0; i<numClouds; i++) {
@@ -317,7 +381,10 @@ public class TaxiGame extends JPanel {
 			starGraphic.fillPolygon(new int[] { i + 10, i + 13, i + 20, i + 14, i + 17, i + 10, i + 3, i + 6, i, i + 7 }, new int[] { 0, 7, 7, 12, 20, 15, 20, 12, 7, 7 }, 10);
 		}
 		g.drawImage(ratingStars, 45, 5, 45 + (int) (100 * rating / MAX_RATING), 55, 0, 0, (int) (100 * rating / MAX_RATING), 50, null);
-
+		
+		// Draw upgradeable stats
+		drawString(g, "Max Speed: "+MAX_SPEED+"\nAcceleration: "+ACCELERATION+"\nMAX_GAS: "+MAX_GAS+"\nFRICTION: "+FRICTION, 5, 38);
+		
 		// Draw gas
 		g.setColor(Color.gray);
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
@@ -341,6 +408,17 @@ public class TaxiGame extends JPanel {
 			g.setColor(Color.white);
 			g.setFont(new Font("Comic Sans", Font.BOLD, 48));
 			g.drawString("PAUSED", S_WIDTH / 2 - 100, S_HEIGHT / 2 + 5);
+		}
+		
+		// Draw help
+		g.setColor(Color.black);
+		g.drawString("Hold H to show controls", 150, 12);
+		if (input.help) {
+			g.setColor(new Color(255, 255, 255, 200));
+			g.fillRect(100, 100, S_WIDTH - 200, S_HEIGHT - 200);
+			g.setColor(Color.black);
+			g.drawRect(100, 100, S_WIDTH - 200, S_HEIGHT - 200);
+			drawString(g, "WASD - movement\nR - restart\nBACKSPACE - exit to menu\nZXCV - zoom controls\nIOP - god mode controls", 150, 150);
 		}
 	}
 
@@ -368,6 +446,10 @@ public class TaxiGame extends JPanel {
 				taxiVelocity.set(Math.cos(cameraAngle + Math.PI / 2), Math.sin(cameraAngle - Math.PI / 2));
 				taxiVelocity.setLength(ACCELERATION);
 			}
+		}
+		// friction
+		else if (!input.up && taxiVelocity.length() > 0) {
+			taxiVelocity.setLength(taxiVelocity.length()*FRICTION);
 		}
 		if (input.down) {
 			if (l > ACCELERATION) {
@@ -557,6 +639,11 @@ public class TaxiGame extends JPanel {
 		else
 			graphics.drawOval((int) (finalZoom * (ovalX - ovalW/2 - camera.x)), (int) (finalZoom * (ovalY - ovalH/2 - camera.y)), (int) (finalZoom * ovalW/2 * 2), (int) (finalZoom * ovalH/2 * 2));
 	}
+	
+	private void drawString(Graphics g, String text, int x, int y) {
+        for (String line : text.split("\n"))
+            g.drawString(line, x, y += g.getFontMetrics().getHeight());
+    }
 }
 
 

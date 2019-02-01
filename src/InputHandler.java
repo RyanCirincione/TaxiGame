@@ -5,7 +5,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener {
-	public boolean right = false, up = false, left = false, down = false;
+	public boolean right = false, up = false, left = false, down = false, help = false;
 	public Vector mouse = new Vector();
 
 	public void keyPressed(KeyEvent e) {
@@ -25,11 +25,29 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			}
 			down = true;
 			break;
+		case KeyEvent.VK_H:
+			help = true;
+			break;
 		}
 	}
 
 	public void keyReleased(KeyEvent e) {
 		switch (e.getKeyCode()) {
+		case KeyEvent.VK_D:
+			right = false;
+			break;
+		case KeyEvent.VK_W:
+			up = false;
+			break;
+		case KeyEvent.VK_A:
+			left = false;
+			break;
+		case KeyEvent.VK_S:
+			down = false;
+			break;
+		case KeyEvent.VK_H:
+			help = false;
+			break;
 		case KeyEvent.VK_ESCAPE:
 			TaxiGame.paused = !TaxiGame.paused;
 			break;
@@ -57,17 +75,14 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		case KeyEvent.VK_V:
 			TaxiGame.zoom = TaxiGame.MIN_ZOOM;
 			break;
-		case KeyEvent.VK_D:
-			right = false;
+		case KeyEvent.VK_I:
+			TaxiGame.trackStock++;
 			break;
-		case KeyEvent.VK_W:
-			up = false;
+		case KeyEvent.VK_O:
+			TaxiGame.gas = TaxiGame.MAX_GAS;
 			break;
-		case KeyEvent.VK_A:
-			left = false;
-			break;
-		case KeyEvent.VK_S:
-			down = false;
+		case KeyEvent.VK_P:
+			TaxiGame.money += 100;
 			break;
 		}
 	}
