@@ -53,6 +53,7 @@ public class TaxiGame extends JPanel {
 	public static boolean paused, mainMenu;
 	InputHandler input;
 	public static Vector taxiLocation, taxiVelocity;
+	public static int upgradeShopCount = 4;
 	public static ArrayList<Vector> trackShops, gasStations, upgradeShops;
 	public static ArrayList<Customer> customers;
 	public static Rectangle newGameButton;
@@ -104,14 +105,32 @@ public class TaxiGame extends JPanel {
 
 		trackShops.add(new Vector(5.5 * TILE_SIZE - 15, 5.5 * TILE_SIZE - 15));
 		gasStations.add(new Vector(6.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
+		// Nonrandomized upgradeShops spawning
 		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 4.5 * TILE_SIZE + 15));
 		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 5.5 * TILE_SIZE + 15));
 		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 6.5 * TILE_SIZE + 15));
 		upgradeShops.add(new Vector(7.5 * TILE_SIZE + 15, 7.5 * TILE_SIZE + 15));
+		/*
+		// Randomized upgradeShop spawning
+		for (int i=0; i<upgradeShopCount; i++) {
+			boolean validVector = false;
+			Vector v = null;
+			while (!validVector) {
+				v = new Vector(((double) ((int) (Math.random()*30)) + 0.5) * TILE_SIZE + (Math.random() < 0.5 ? 15 : -15), ((double) ((int) (Math.random()*30)) + 0.5) * TILE_SIZE + (Math.random() < 0.5 ? 15 : -15));
+				validVector = true;
+				for (int j=0; j<i; j++) {
+					if (v.distance2(upgradeShops.get(j)) < 50 * 50) {
+						validVector = false;
+					}
+				}
+			}
+			upgradeShops.add(v);
+		}
+		*/
 
 		generateCity(plannedTracks);
-		for (int x = 5; x <= 7; x++) {
-			for (int y = 5; y <= 7; y++) {
+		for (int x = 0; x <= 29; x++) {
+			for (int y = 0; y <= 29; y++) {
 				tracks[x][y] = plannedTracks[x][y];
 			}
 		}
