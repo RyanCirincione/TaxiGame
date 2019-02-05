@@ -35,7 +35,9 @@ public class TaxiGame extends JPanel {
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				panel.tick();
+				synchronized(TaxiGame.generationLock) {
+					panel.tick();
+				}
 				panel.repaint();
 			}
 		}, 0, 1000 / 60);
@@ -61,7 +63,7 @@ public class TaxiGame extends JPanel {
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
 	public static ArrayList<Customer> customers;
 	public static Rectangle newGameButton;
-	public static boolean everythingsGenerated = false; //needed because of concurrent threads
+	public static Object generationLock;
 
 	// zoom variables
 	public static double zoom = 1, visualZoom = 100;
@@ -70,6 +72,7 @@ public class TaxiGame extends JPanel {
 	public static Cloud[] clouds;
 
 	public TaxiGame() {
+		generationLock = new Object();
 		newGameButton = new Rectangle(S_WIDTH / 2 - 100, S_HEIGHT / 2 - 50, 200, 100);
 		mainMenu = true;
 		input = new InputHandler();
@@ -84,7 +87,6 @@ public class TaxiGame extends JPanel {
 	}
 
 	public static void startNewGame() {
-		everythingsGenerated = false;
 		paused = false;
 		rating = 3.0;
 		trackStock = 0;
@@ -141,13 +143,9 @@ public class TaxiGame extends JPanel {
 		
 		generateClouds();
 		generateUpgradeShops();
-		
-		everythingsGenerated = true;
 	}
 
 	public void tick() {
-		if (!everythingsGenerated) return;
-		
 		if (paused || mainMenu)
 			return;
 

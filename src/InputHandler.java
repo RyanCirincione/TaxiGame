@@ -59,7 +59,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		case KeyEvent.VK_R:
 			System.out.println("Restart");
 			TaxiGame.mainMenu = false;
-			TaxiGame.startNewGame();
+			synchronized (TaxiGame.generationLock) {
+				TaxiGame.startNewGame();
+			}
 			break;
 		case KeyEvent.VK_BACK_SPACE:
 			TaxiGame.mainMenu = true;
@@ -111,7 +113,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		if (TaxiGame.mainMenu && TaxiGame.newGameButton.contains(e.getX(), e.getY())) {
 			TaxiGame.mainMenu = false;
-			TaxiGame.startNewGame();
+			synchronized(TaxiGame.generationLock) {
+				TaxiGame.startNewGame();
+			}
 		}
 	}
 
