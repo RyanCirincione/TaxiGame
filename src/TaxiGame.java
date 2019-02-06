@@ -283,25 +283,27 @@ public class TaxiGame extends JPanel {
 			return;
 		}
 
-		// Rotate the camera
+		// Manipulate rendering camera in space
 		g.translate(S_WIDTH / 2, S_HEIGHT / 2);
 		g.rotate(visualCameraAngle);
 		g.scale(SCREEN_SCALE, SCREEN_SCALE);
+		g.scale(visualZoom, visualZoom);
+		g.translate(-camera.x, -camera.y);
 
 		// Draw tracks
 		g.setColor(Color.black);
-		g.setStroke(new BasicStroke((int) (2 * visualZoom)));
+		g.setStroke(new BasicStroke(2));
 		final double TS = TILE_SIZE;
 		final double CR = CURVE_RADIUS;
 		for (int x = 0; x < tracks.length; x++) {
 			for (int y = 0; y < tracks[x].length; y++) {
 				if (tracks[x][y] != null) {
-					double drawX1 = x * TS + TS / 2 - camera.x;
-					double drawY1 = y * TS + TS / 2 - camera.y;
-					if (tracks[x][y].right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS - camera.x, drawY1);
-					if (tracks[x][y].up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS - camera.y);
-					if (tracks[x][y].left) drawMapLine(g, drawX1 - CR, drawY1, x * TS - camera.x, drawY1);
-					if (tracks[x][y].down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS - camera.y);
+					double drawX1 = x * TS + TS / 2;
+					double drawY1 = y * TS + TS / 2;
+					if (tracks[x][y].right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS, drawY1);
+					if (tracks[x][y].up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS);
+					if (tracks[x][y].left) drawMapLine(g, drawX1 - CR, drawY1, x * TS, drawY1);
+					if (tracks[x][y].down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS);
 					if (tracks[x][y].right && tracks[x][y].left) drawMapLine(g, drawX1 + CR, drawY1, drawX1 - CR, drawY1);
 					if (tracks[x][y].up && tracks[x][y].down) drawMapLine(g, drawX1, drawY1 - CR, drawX1, drawY1 + CR);
 					if (tracks[x][y].right && tracks[x][y].up) drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, -90, -90);
@@ -341,8 +343,8 @@ public class TaxiGame extends JPanel {
 
 			if (taxiLocation.distance2(v) < 150 * 150) {
 				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
-				g.drawString("$" + trackInvestment + "/$25", (int) (visualZoom * v.x - visualZoom * 20 - visualZoom * camera.x),
-						(int) (visualZoom * v.y - visualZoom * 8 - visualZoom * camera.y));
+				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20 - camera.x),
+						(int) (v.y - 8 - camera.y));
 			}
 		}
 		g.setColor(new Color(175, 150, 50));
@@ -383,7 +385,9 @@ public class TaxiGame extends JPanel {
 			drawMapOval(g, clouds[i].x, clouds[i].y, clouds[i].size, clouds[i].size, clouds[i].myZoom, true);
 		}
 
-		// Unrotate the camera
+		// Unmanipulate the camera in space
+		g.translate(camera.x, camera.y);
+		g.scale(1 / visualZoom, 1 / visualZoom);
 		g.scale(1 / SCREEN_SCALE, 1 / SCREEN_SCALE);
 		g.rotate(-visualCameraAngle);
 		g.translate(-S_WIDTH / 2, -S_HEIGHT / 2);
@@ -664,7 +668,7 @@ public class TaxiGame extends JPanel {
 
 	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
-		double finalZoom = zoomLevel * visualZoom;
+		double finalZoom = zoomLevel;
 		graphics.drawLine((int) (finalZoom * lineX1), (int) (finalZoom * lineY1), (int) (finalZoom * lineX2), (int) (finalZoom * lineY2));
 	}
 
@@ -674,7 +678,7 @@ public class TaxiGame extends JPanel {
 
 	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
-		double finalZoom = zoomLevel * visualZoom;
+		double finalZoom = zoomLevel;
 		graphics.drawArc((int) (finalZoom * arcX), (int) (finalZoom * arcY), (int) (finalZoom * arcW), (int) (finalZoom * arcH), (int) (startAng), (int) (endAng));
 	}
 
@@ -686,12 +690,12 @@ public class TaxiGame extends JPanel {
 
 	private static void drawMapOval(Graphics2D graphics, double ovalX, double ovalY, double ovalW, double ovalH, double zoomLevel, boolean fill) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
-		double finalZoom = zoomLevel * visualZoom;
+		double finalZoom = zoomLevel;
 		if (fill)
-			graphics.fillOval((int) (finalZoom * (ovalX - ovalW / 2 - camera.x)), (int) (finalZoom * (ovalY - ovalH / 2 - camera.y)), (int) (finalZoom * ovalW / 2 * 2),
+			graphics.fillOval((int) (finalZoom * (ovalX - ovalW / 2)), (int) (finalZoom * (ovalY - ovalH / 2)), (int) (finalZoom * ovalW / 2 * 2),
 					(int) (finalZoom * ovalH / 2 * 2));
 		else
-			graphics.drawOval((int) (finalZoom * (ovalX - ovalW / 2 - camera.x)), (int) (finalZoom * (ovalY - ovalH / 2 - camera.y)), (int) (finalZoom * ovalW / 2 * 2),
+			graphics.drawOval((int) (finalZoom * (ovalX - ovalW / 2)), (int) (finalZoom * (ovalY - ovalH / 2)), (int) (finalZoom * ovalW / 2 * 2),
 					(int) (finalZoom * ovalH / 2 * 2));
 	}
 
