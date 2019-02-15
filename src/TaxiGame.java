@@ -343,8 +343,7 @@ public class TaxiGame extends JPanel {
 
 			if (taxiLocation.distance2(v) < 150 * 150) {
 				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxiLocation.distance(v) / 150))));
-				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20 - camera.x),
-						(int) (v.y - 8 - camera.y));
+				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20), (int) (v.y - 8));
 			}
 		}
 		g.setColor(new Color(175, 150, 50));
