@@ -18,8 +18,8 @@ public class Customer {
 
 	public void update() {
 		// Pick up logic
-		if (TaxiGame.taxiVelocity.length() < 0.5 && !pickedUp && !droppedOff) {
-			double d = TaxiGame.taxiLocation.distance2(position);
+		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff) {
+			double d = TaxiGame.taxi.location.distance2(position);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				if (d < 5 * 5) {
 					anger = 0;
@@ -41,18 +41,18 @@ public class Customer {
 						destination = newDestination;
 					}
 				} else {
-					position.set(position.lerp(TaxiGame.taxiLocation, 1));
+					position.set(position.lerp(TaxiGame.taxi.location, 1));
 				}
 			}
 		}
 
 		// Drop off logic
-		if (TaxiGame.taxiVelocity.length() < 0.5 && pickedUp && !droppedOff) {
-			double d = TaxiGame.taxiLocation.distance2(destination);
+		if (TaxiGame.taxi.velocity.length() < 0.5 && pickedUp && !droppedOff) {
+			double d = TaxiGame.taxi.location.distance2(destination);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				pickedUp = false;
 				droppedOff = true;
-				position.set(TaxiGame.taxiLocation);
+				position.set(TaxiGame.taxi.location);
 				TaxiGame.income += (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
 
 				if (anger < 300) {

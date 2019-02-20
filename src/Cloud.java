@@ -22,6 +22,7 @@ public class Cloud {
 			size = Math.random()*TaxiGame.TILE_SIZE/2;
 			myZoom = Math.random()*0.25+0.75;
 		}
+		speed = 0;
 	}
 	
 	public void Update() {
