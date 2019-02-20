@@ -47,15 +47,22 @@ public class TaxiGame extends JPanel {
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static double MAX_SPEED = 2.0, ACCELERATION = 0.03, SCREEN_SCALE = 1.75, MAX_GAS = 20.0, MAX_RATING = 5.0, FRICTION = 0.997;
 	public static final double START_MAX_SPEED = MAX_SPEED, START_ACCELERATION = ACCELERATION, START_MAX_GAS = MAX_GAS, START_FRICTION = FRICTION;
-	public static final double MAX_MAX_SPEED = 10, MAX_ACCELERATION = 10, MAX_MAX_GAS = 40.0, MAX_FRICTION = 1;
+	public static final double MAX_MAX_SPEED = 10, MAX_ACCELERATION = .2, MAX_MAX_GAS = 40.0, MAX_FRICTION = 1;
 	public static int money_in_speed = 0, money_in_acceleration = 0, money_in_gas = 0, money_in_friction = 0;
 	public static Track[][] tracks, plannedTracks;
+	public static boolean predictStartLoop;
+	public static boolean[][] predictTracks;
+	public static Vector[] predictTracksArray;
+	public static int[][] predictEnters, predictExits;
+	public static double predictOpacity = 0.5;
+	public static boolean predictOpacityUp = true;
+	public static Vector nextTrack;
 	public static Vector camera;
 	public static double cameraAngle, visualCameraAngle, gas, rating;
 	public static int money, income, trackInvestment, trackStock;
 	public static boolean paused, mainMenu;
 	InputHandler input;
-	public static Vector taxiLocation, taxiVelocity;
+	public static Vector taxiLocation, taxiVelocity, taxiPredVelocity = new Vector(0, 1), taxiTile;
 	public static int upgradeShopCount = 4;
 	public static ArrayList<Vector> trackShops, gasStations, upgradeShops;
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
@@ -111,6 +118,21 @@ public class TaxiGame extends JPanel {
 		FRICTION = START_FRICTION;
 		gas = MAX_GAS;
 		clouds = new Cloud[30];
+		predictStartLoop = false;
+		predictTracks = new boolean[30][30];
+		predictTracksArray = new Vector[30];
+		predictEnters = new int[30][30];
+		predictExits = new int[30][30];
+		nextTrack = new Vector(0, 0);
+		for (int i = 0; i < predictTracksArray.length; i++) {
+			predictTracksArray[i] = null;
+		}
+		for (int i = 0; i < predictEnters.length; i++) {
+			for (int j = 0; j < predictEnters[0].length; j++) {
+				predictEnters[i][j] = -1;
+				predictExits[i][j] = -1;
+			}
+		}
 
 		generateCity(plannedTracks);
 		plannedTracks[5][5].up = true;
@@ -196,6 +218,21 @@ public class TaxiGame extends JPanel {
 		// Clouds and birds
 		for (int i = 0; i < clouds.length; i++) {
 			clouds[i].Update();
+		}
+
+		// Update taxiTile
+		taxiTile = new Vector((int) (taxiLocation.x / TILE_SIZE), (int) (taxiLocation.y / TILE_SIZE));
+		
+		// PredictOpacity
+		if (predictOpacityUp) {
+			predictOpacity += 0.005;
+			if (predictOpacity >= 0.75)
+				predictOpacityUp = false;
+		}
+		else {
+			predictOpacity -= 0.005;
+			if (predictOpacity <= 0.25)
+				predictOpacityUp = true;
 		}
 
 		// Receive money
@@ -288,29 +325,273 @@ public class TaxiGame extends JPanel {
 		g.rotate(visualCameraAngle);
 		g.scale(SCREEN_SCALE, SCREEN_SCALE);
 
+		// Predicted path
+		for (int i = 0; i < predictTracksArray.length; i++) {
+			if (predictTracksArray[i] == null) break;
+			predictTracks[(int) (predictTracksArray[i].x)][(int) (predictTracksArray[i].y)] = false;
+			predictTracksArray[i] = null;
+		}
+
+		Vector prevTile, currentTile;
+		int dir = getNextDir();
+		currentTile = taxiTile.clone();
+		int curx = (int) (currentTile.x);
+		int cury = (int) (currentTile.y);
+		predictTracks[curx][cury] = true;
+		predictEnters[curx][cury] = 0;
+		predictExits[curx][cury] = dir;
+		predictTracksArray[0] = currentTile.clone();
+		prevTile = currentTile.clone();
+
+		int iter = 1;
+		while (iter < predictTracksArray.length) {
+			dir = predictExits[(int) (prevTile.x)][(int) (prevTile.y)];
+			if (dir == 0)
+				currentTile = new Vector(prevTile.x + 1, prevTile.y);
+			else if (dir == 1)
+				currentTile = new Vector(prevTile.x, prevTile.y - 1);
+			else if (dir == 2)
+				currentTile = new Vector(prevTile.x - 1, prevTile.y);
+			else
+				currentTile = new Vector(prevTile.x, prevTile.y + 1);
+			curx = (int) (currentTile.x);
+			cury = (int) (currentTile.y);
+			if (predictTracks[curx][cury] && ! (predictTracksArray[0].x == curx && predictTracksArray[0].y == cury)) break;
+			predictTracks[curx][cury] = true;
+			predictEnters[curx][cury] = (dir + 2) % 4;
+			predictExits[curx][cury] = getTrackDirection(plannedTracks[curx][cury], dir);
+			predictTracksArray[iter] = currentTile.clone();
+			if (predictTracksArray[0].x == curx && predictTracksArray[0].y == cury) {
+				predictStartLoop = true;
+				break;
+			}
+			if (tracks[curx][cury] == null) break;
+			prevTile = currentTile.clone();
+			iter++;
+		}
+
 		// Draw tracks
-		g.setColor(Color.black);
-		g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 		final double TS = TILE_SIZE;
 		final double CR = CURVE_RADIUS;
 		for (int x = 0; x < tracks.length; x++) {
 			for (int y = 0; y < tracks[x].length; y++) {
-				if (tracks[x][y] != null) {
-					double drawX1 = x * TS + TS / 2 - camera.x;
-					double drawY1 = y * TS + TS / 2 - camera.y;
-					if (tracks[x][y].right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS - camera.x, drawY1);
-					if (tracks[x][y].up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS - camera.y);
-					if (tracks[x][y].left) drawMapLine(g, drawX1 - CR, drawY1, x * TS - camera.x, drawY1);
-					if (tracks[x][y].down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS - camera.y);
-					if (tracks[x][y].right && tracks[x][y].left) drawMapLine(g, drawX1 + CR, drawY1, drawX1 - CR, drawY1);
-					if (tracks[x][y].up && tracks[x][y].down) drawMapLine(g, drawX1, drawY1 - CR, drawX1, drawY1 + CR);
-					if (tracks[x][y].right && tracks[x][y].up) drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, -90, -90);
-					if (tracks[x][y].up && tracks[x][y].left) drawMapArc(g, drawX1 - CR * 2, drawY1 - CR * 2, CR * 2, CR * 2, 0, -90);
-					if (tracks[x][y].left && tracks[x][y].down) drawMapArc(g, drawX1 - CR * 2, drawY1, CR * 2, CR * 2, 90, -90);
-					if (tracks[x][y].down && tracks[x][y].right) drawMapArc(g, drawX1, drawY1, CR * 2, CR * 2, 180, -90);
+				boolean drawThis = false;
+				double drawX1 = x * TS + TS / 2;
+				double drawY1 = y * TS + TS / 2;
+				if (predictTracks[x][y] && tracks[x][y] == null) {
+					drawThis = true;
+					g.setColor(new Color(0, 0, 0, 100));
+				} else if (tracks[x][y] != null) {
+					drawThis = true;
+					g.setColor(Color.black);
+					g.setStroke(new BasicStroke((int) (2 * visualZoom)));
+				}
+				if (drawThis) {
+					if (plannedTracks[x][y].right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS, drawY1);
+					if (plannedTracks[x][y].up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS);
+					if (plannedTracks[x][y].left) drawMapLine(g, drawX1 - CR, drawY1, x * TS, drawY1);
+					if (plannedTracks[x][y].down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS);
+					if (plannedTracks[x][y].right && plannedTracks[x][y].left) drawMapLine(g, drawX1 + CR, drawY1, drawX1 - CR, drawY1);
+					if (plannedTracks[x][y].up && plannedTracks[x][y].down) drawMapLine(g, drawX1, drawY1 - CR, drawX1, drawY1 + CR);
+					if (plannedTracks[x][y].right && plannedTracks[x][y].up) drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, -90, -90);
+					if (plannedTracks[x][y].up && plannedTracks[x][y].left) drawMapArc(g, drawX1 - CR * 2, drawY1 - CR * 2, CR * 2, CR * 2, 0, -90);
+					if (plannedTracks[x][y].left && plannedTracks[x][y].down) drawMapArc(g, drawX1 - CR * 2, drawY1, CR * 2, CR * 2, 90, -90);
+					if (plannedTracks[x][y].down && plannedTracks[x][y].right) drawMapArc(g, drawX1, drawY1, CR * 2, CR * 2, 180, -90);
+				}
+				if (predictTracks[x][y]) {
+					if (x == taxiTile.x && y == taxiTile.y) {
+						g.setColor(new Color(255, 0, 0, (int) (255 * predictOpacity)));
+						g.setStroke(new BasicStroke((int) (1 * visualZoom)));
+						Vector taxiModTile = new Vector(taxiLocation.x % TS, taxiLocation.y % TS);
+						double taxiX = taxiLocation.x, taxiY = taxiLocation.y;
+						double taxiTileX = (taxiTile.x + 0.5) * TS, taxiTileY = (taxiTile.y + 0.5) * TS;
+						double TS2 = TS / 2;
+						double startAng = 0, ang = 0;
+						switch (predictExits[(int) (taxiTile.x)][(int) (taxiTile.y)]) {
+						case 0:
+							// Exiting to right
+							if (taxiModTile.x > TS2 + CR) {
+								// Up to the last bit
+								drawMapLine(g, taxiX, taxiY, taxiTileX + TS2, taxiY);
+							} else if (taxiModTile.y == TS2) {
+								// Straight
+								drawMapLine(g, taxiX, taxiY, taxiTileX + TS2, taxiY);
+							} else {
+								// Not up to last bit
+								drawMapLine(g, taxiTileX + CR, taxiTileY, taxiTileX + TS2, taxiTileY);
+								if (taxiModTile.y < TS2) {
+									// Entering from up
+									if (taxiModTile.y < TS2 - CR) {
+										// On up-most bit
+										drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY - CR);
+										startAng = 180;
+										ang = 90;
+									} else {
+										Vector centerPoint = new Vector(TS2 + CR, TS2 - CR);
+										ang = Math.toDegrees(Math.atan((taxiModTile.x - centerPoint.x) / -(taxiModTile.y - centerPoint.y)));
+										startAng = 180 + 90 - ang;
+									}
+									drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, startAng, ang);
+								} else {
+									// Entering from down
+									if (taxiModTile.y > TS2 + CR) {
+										// On down-most bit
+										drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY + CR);
+										startAng = 180;
+										ang = -90;
+									} else {
+										Vector centerPoint = new Vector(TS2 + CR, TS2 + CR);
+										ang = Math.toDegrees(Math.atan((taxiModTile.x - centerPoint.x) / -(taxiModTile.y - centerPoint.y)));
+										startAng = 180 - 90 - ang;
+									}
+									drawMapArc(g, drawX1, drawY1, CR * 2, CR * 2, startAng, ang);
+								}
+							}
+							break;
+						case 1:
+							// Exiting to up
+							if (taxiModTile.y < TS2 - CR) {
+								// Up to last bit
+								drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY - TS2);
+							} else if (taxiModTile.x == TS2) {
+								// Straight
+								drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY - TS2);
+							} else {
+								// Not up to last bit
+								drawMapLine(g, taxiTileX, taxiTileY - CR, taxiTileX, taxiTileY - TS2);
+								if (taxiModTile.x < TS2) {
+									// Entering from left
+									if (taxiModTile.x < TS2 - CR) {
+										// On leftmost bit
+										drawMapLine(g, taxiX, taxiY, taxiTileX - CR, taxiY);
+										startAng = 270;
+										ang = 90;
+									} else {
+										Vector centerPoint = new Vector(TS2 - CR, TS2 - CR);
+										ang = -Math.toDegrees(Math.atan(-(taxiModTile.y - centerPoint.y) / (taxiModTile.x - centerPoint.x)));
+										startAng = 270 + 90 - ang;
+									}
+									drawMapArc(g, drawX1 - CR * 2, drawY1 - CR * 2, CR * 2, CR * 2, startAng, ang);
+								} else {
+									// Entering from right
+									if (taxiModTile.x > TS2 + CR) {
+										// On rightmost bit
+										drawMapLine(g, taxiX, taxiY, taxiTileX + CR, taxiY);
+										startAng = 270;
+										ang = -90;
+									} else {
+										Vector centerPoint = new Vector(TS2 + CR, TS2 - CR);
+										ang = -Math.toDegrees(Math.atan(-(taxiModTile.y - centerPoint.y) / (taxiModTile.x - centerPoint.x)));
+										startAng = 270 - 90 - ang;
+									}
+									drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, startAng, ang);
+								}
+							}
+							break;
+						case 2:
+							// Exiting to left
+							if (taxiModTile.x < TS2 - CR) {
+								// Up to last bit
+								drawMapLine(g, taxiX, taxiY, taxiTileX - TS2, taxiY);
+							} else if (taxiModTile.y == TS2) {
+								// Straight
+								drawMapLine(g, taxiX, taxiY, taxiTileX - TS2, taxiY);
+							} else {
+								// Not up to last bit
+								drawMapLine(g, taxiTileX - CR, taxiTileY, taxiTileX - TS2, taxiTileY);
+								if (taxiModTile.y > TS2) {
+									// Entering from down
+									if (taxiModTile.y > TS2 + CR) {
+										// On down-most bit
+										drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY + CR);
+										startAng = 0;
+										ang = 90;
+									} else {
+										Vector centerPoint = new Vector(TS2 - CR, TS2 + CR);
+										ang = Math.toDegrees(Math.atan((taxiModTile.x - centerPoint.x) / -(taxiModTile.y - centerPoint.y)));
+										startAng = 0 + 90 - ang;
+									}
+									drawMapArc(g, drawX1 - CR * 2, drawY1, CR * 2, CR * 2, startAng, ang);
+								} else {
+									// Entering from up
+									if (taxiModTile.y < TS2 - CR) {
+										// On up-most bit
+										drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY - CR);
+										startAng = 0;
+										ang = -90;
+									} else {
+										Vector centerPoint = new Vector(TS2 - CR, TS2 - CR);
+										ang = Math.toDegrees(Math.atan((taxiModTile.x - centerPoint.x) / -(taxiModTile.y - centerPoint.y)));
+										startAng = 0 - 90 - ang;
+									}
+									drawMapArc(g, drawX1 - CR * 2, drawY1 - CR * 2, CR * 2, CR * 2, startAng, ang);
+								}
+							}
+							break;
+						case 3:
+							// Exiting to down
+							if (taxiModTile.y > TS2 + CR) {
+								// Up to last bit
+								drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY + TS2);
+							} else if (taxiModTile.x == TS2) {
+								// Straight
+								drawMapLine(g, taxiX, taxiY, taxiX, taxiTileY + TS2);
+							} else {
+								// Not up to last bit
+								drawMapLine(g, taxiTileX, taxiTileY + CR, taxiTileX, taxiTileY + TS2);
+								if (taxiModTile.x > TS2) {
+									// Entering from right
+									if (taxiModTile.x > TS2 + CR) {
+										// On rightmost bit
+										drawMapLine(g, taxiX, taxiY, taxiTileX + CR, taxiY);
+										startAng = 90;
+										ang = 90;
+									} else {
+										Vector centerPoint = new Vector(TS2 + CR, TS2 + CR);
+										ang = -Math.toDegrees(Math.atan(-(taxiModTile.y - centerPoint.y) / (taxiModTile.x - centerPoint.x)));
+										startAng = 90 + 90 - ang;
+									}
+									drawMapArc(g, drawX1, drawY1, CR * 2, CR * 2, startAng, ang);
+								} else {
+									// Entering from left
+									if (taxiModTile.x < TS2 - CR) {
+										// On leftmost bit
+										drawMapLine(g, taxiX, taxiY, taxiTileX - CR, taxiY);
+										startAng = 90;
+										ang = -90;
+									} else {
+										Vector centerPoint = new Vector(TS2 - CR, TS2 + CR);
+										ang = -Math.toDegrees(Math.atan(-(taxiModTile.y - centerPoint.y) / (taxiModTile.x - centerPoint.x)));
+										startAng = 90 - 90 - ang;
+									}
+									drawMapArc(g, drawX1 - CR * 2, drawY1, CR * 2, CR * 2, startAng, ang);
+								}
+							}
+							break;
+						}
+					}
+					if ((x == taxiTile.x && y == taxiTile.y && predictStartLoop) || (!(x == taxiTile.x && y == taxiTile.y) && tracks[x][y] != null)) {
+						g.setColor(new Color(255, 0, 0, (int) (255 * predictOpacity)));
+						g.setStroke(new BasicStroke((int) (1 * visualZoom)));
+						boolean right = predictEnters[x][y] == 0 || predictExits[x][y] == 0;
+						boolean up = predictEnters[x][y] == 1 || predictExits[x][y] == 1;
+						boolean left = predictEnters[x][y] == 2 || predictExits[x][y] == 2;
+						boolean down = predictEnters[x][y] == 3 || predictExits[x][y] == 3;
+						if (right) drawMapLine(g, drawX1 + CR, drawY1, (x + 1) * TS, drawY1);
+						if (up) drawMapLine(g, drawX1, drawY1 - CR, drawX1, y * TS);
+						if (left) drawMapLine(g, drawX1 - CR, drawY1, x * TS, drawY1);
+						if (down) drawMapLine(g, drawX1, drawY1 + CR, drawX1, (y + 1) * TS);
+						if (right && left) drawMapLine(g, drawX1 + CR, drawY1, drawX1 - CR, drawY1);
+						if (up && down) drawMapLine(g, drawX1, drawY1 - CR, drawX1, drawY1 + CR);
+						if (right && up) drawMapArc(g, drawX1, drawY1 - CR * 2, CR * 2, CR * 2, -90, -90);
+						if (up && left) drawMapArc(g, drawX1 - CR * 2, drawY1 - CR * 2, CR * 2, CR * 2, 0, -90);
+						if (left && down) drawMapArc(g, drawX1 - CR * 2, drawY1, CR * 2, CR * 2, 90, -90);
+						if (down && right) drawMapArc(g, drawX1, drawY1, CR * 2, CR * 2, 180, -90);
+					}
 				}
 			}
 		}
+		g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 
 		// Draw taxi
 		g.setColor(Color.yellow);
@@ -415,6 +696,23 @@ public class TaxiGame extends JPanel {
 		g.drawString("F", 94, S_HEIGHT - 20);
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((MAX_GAS - gas) / MAX_GAS * Math.PI)) + 60, (int) -(40 * Math.sin((MAX_GAS - gas) / MAX_GAS * Math.PI)) + S_HEIGHT - 20);
+
+		// Draw compass
+		int startLineX = S_WIDTH - 70;
+		int startLineY = S_HEIGHT - 70;
+		int endLineX = (int) (Math.round(S_WIDTH - 70 + 50 * Math.sin(visualCameraAngle)));
+		int endLineY = (int) (Math.round(S_HEIGHT - 70 + 50 * -Math.cos(visualCameraAngle)));
+		g.setColor(Color.black);
+		g.setStroke(new BasicStroke(2));
+		g.drawLine(startLineX, startLineY, endLineX, endLineY);
+		startLineX = (int) (Math.round(S_WIDTH - 70 + 5 * Math.cos(visualCameraAngle)));
+		startLineY = (int) (Math.round(S_HEIGHT - 70 + 5 * Math.sin(visualCameraAngle)));
+		g.drawLine(startLineX, startLineY, endLineX, endLineY);
+		startLineX = (int) (Math.round(S_WIDTH - 70 - 5 * Math.cos(visualCameraAngle)));
+		startLineY = (int) (Math.round(S_HEIGHT - 70 - 5 * Math.sin(visualCameraAngle)));
+		g.drawLine(startLineX, startLineY, endLineX, endLineY);
+		g.setColor(Color.blue);
+		g.drawString("N", (int) (Math.round(S_WIDTH - 70 + 50 * Math.sin(visualCameraAngle))), (int) (Math.round(S_HEIGHT - 70 + 50 * -Math.cos(visualCameraAngle))));
 
 		// Draw Game Over
 		if (taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
@@ -658,6 +956,73 @@ public class TaxiGame extends JPanel {
 		}
 	}
 
+	private int getNextDir() {
+		Vector taxiModTile = new Vector(taxiLocation.x % TILE_SIZE, taxiLocation.y % TILE_SIZE);
+		int hts = TILE_SIZE / 2;
+		int dir = (int) (mod(Math.round(visualCameraAngle / (Math.PI / 2)) + 1, 4));
+		if (dir == 0 && taxiModTile.x < hts - 20 || dir == 1 && taxiModTile.y > hts + 20 || dir == 2 && taxiModTile.x > hts + 20 || dir == 3 && taxiModTile.y < hts - 20) {
+			dir = getTrackDirection(tracks[(int) (taxiTile.x)][(int) (taxiTile.y)], dir);
+		} else {
+			if (taxiModTile.x == hts || taxiModTile.y == hts) {
+			} else if (taxiModTile.x < hts && taxiModTile.y < hts) {
+				if (dir == 0 || dir == 1)
+					dir = 1;
+				else
+					dir = 2;
+			} else if (taxiModTile.x > hts && taxiModTile.y < hts) {
+				if (dir == 1 || dir == 2)
+					dir = 1;
+				else
+					dir = 0;
+			} else if (taxiModTile.x < hts && taxiModTile.y > hts) {
+				if (dir == 1 || dir == 2)
+					dir = 2;
+				else
+					dir = 3;
+			} else {
+				if (dir == 0 || dir == 1)
+					dir = 0;
+				else
+					dir = 3;
+			}
+		}
+		return dir;
+	}
+
+	private int getTrackDirection(Track track, int startDir) {
+		boolean[] trackDirs = new boolean[4];
+		trackDirs[0] = track.right;
+		trackDirs[1] = track.up;
+		trackDirs[2] = track.left;
+		trackDirs[3] = track.down;
+		if (input.left) {
+			if (trackDirs[(int) (mod((startDir + 1), 4))])
+				return (int) (mod((startDir + 1), 4));
+			else {
+				if (trackDirs[startDir])
+					return (startDir);
+				else
+					return (int) (mod((startDir - 1), 4));
+			}
+		} else if (input.right) {
+			if (trackDirs[(int) (mod((startDir - 1), 4))])
+				return (int) (mod((startDir - 1), 4));
+			else {
+				if (trackDirs[startDir])
+					return (startDir);
+				else
+					return (int) (mod((startDir + 1), 4));
+			}
+		} else {
+			if (trackDirs[startDir])
+				return (startDir);
+			else if (trackDirs[(int) (mod((startDir - 1), 4))])
+				return (int) (mod((startDir - 1), 4));
+			else
+				return (int) (mod((startDir + 1), 4));
+		}
+	}
+
 	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2) {
 		drawMapLine(graphics, lineX1, lineY1, lineX2, lineY2, 1);
 	}
@@ -665,7 +1030,8 @@ public class TaxiGame extends JPanel {
 	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
 		double finalZoom = zoomLevel * visualZoom;
-		graphics.drawLine((int) (finalZoom * lineX1), (int) (finalZoom * lineY1), (int) (finalZoom * lineX2), (int) (finalZoom * lineY2));
+		graphics.drawLine((int) (finalZoom * (lineX1 - camera.x)), (int) (finalZoom * (lineY1 - camera.y)), (int) (finalZoom * (lineX2 - camera.x)),
+				(int) (finalZoom * (lineY2 - camera.y)));
 	}
 
 	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng) {
@@ -675,7 +1041,8 @@ public class TaxiGame extends JPanel {
 	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
 		double finalZoom = zoomLevel * visualZoom;
-		graphics.drawArc((int) (finalZoom * arcX), (int) (finalZoom * arcY), (int) (finalZoom * arcW), (int) (finalZoom * arcH), (int) (startAng), (int) (endAng));
+		graphics.drawArc((int) (finalZoom * (arcX - camera.x)), (int) (finalZoom * (arcY - camera.y)), (int) (finalZoom * arcW), (int) (finalZoom * arcH), (int) (startAng),
+				(int) (endAng));
 	}
 
 	// for ovals, ovalX and ovalY are the center of the oval. They also take a
@@ -699,4 +1066,15 @@ public class TaxiGame extends JPanel {
 		for (String line : text.split("\n"))
 			g.drawString(line, x, y += g.getFontMetrics().getHeight());
 	}
+
+	private double mod(double a, double b) {
+		// this function is just the modulus operator but it works with negative numbers
+		// too, always producing a positive number
+		double ret = a % b;
+		while (ret < 0) {
+			ret += b;
+		}
+		return ret;
+	}
+
 }
