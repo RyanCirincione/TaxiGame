@@ -57,7 +57,7 @@ public class TaxiGame extends JPanel {
 	public static Vector nextTrack;
 	public static Vector camera;
 	public static double cameraAngle, visualCameraAngle, rating;
-	public static int money, income, trackInvestment, trackStock;
+	public static int money, income, trackInvestment, trackStock, numTracks;
 	public static boolean paused, mainMenu;
 	public static InputHandler input;
 	public static Vector taxiPredVelocity = new Vector(0, 1), taxiTile;
@@ -107,6 +107,7 @@ public class TaxiGame extends JPanel {
 		income = 50;
 		money = 0;
 		trackInvestment = 0;
+		numTracks = 0;
 		customers = new ArrayList<Customer>();
 		taxi.location = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxi.start();
@@ -145,23 +146,14 @@ public class TaxiGame extends JPanel {
 		// Start with 16 tracks
 		for (int i = 0; i < 14; i++) {
 			Point p = possibilities.remove((int) (Math.random() * possibilities.size()));
-			tracks[p.x][p.y] = plannedTracks[p.x][p.y];
+			addTrack(p.x, p.y);
 			if (plannedTracks[p.x][p.y].up && tracks[p.x][p.y - 1] == null) possibilities.add(new Point(p.x, p.y - 1));
 			if (plannedTracks[p.x][p.y].right && tracks[p.x + 1][p.y] == null) possibilities.add(new Point(p.x + 1, p.y));
 			if (plannedTracks[p.x][p.y].down && tracks[p.x][p.y + 1] == null) possibilities.add(new Point(p.x, p.y + 1));
 			if (plannedTracks[p.x][p.y].left && tracks[p.x - 1][p.y] == null) possibilities.add(new Point(p.x - 1, p.y));
-
-			if (i == 2) {
-				trackShops.add(new Vector((p.x + 0.5) * TILE_SIZE - 15, (p.y + 0.5) * TILE_SIZE - 15));
-			}
-
-			if (i == 8) {
-				gasStations.add(new Vector((p.x + 0.5) * TILE_SIZE + 15, (p.y + 0.5) * TILE_SIZE + 15));
-			}
 		}
 
 		generateClouds();
-		generateUpgradeShops();
 	}
 
 	public void tick() {
@@ -247,34 +239,24 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Buy upgrades
-		Vector v;
-		// top speed
-		v = upgradeShops.get(0);
-		if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-			money--;
-			money_in_speed++;
-			taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_speed + 1) + Taxi.MAX_MAX_SPEED;
-		}
-		// acceleration
-		v = upgradeShops.get(1);
-		if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-			money--;
-			money_in_acceleration++;
-			taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_acceleration + 1) + Taxi.MAX_ACCELERATION;
-		}
-		// max gas
-		v = upgradeShops.get(2);
-		if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-			money--;
-			money_in_gas++;
-			taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
-		}
-		// friction
-		v = upgradeShops.get(3);
-		if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-			money--;
-			money_in_friction++;
-			taxi.friction = -(Taxi.MAX_FRICTION - Taxi.START_FRICTION) / (.01 * money_in_friction + 1) + Taxi.MAX_FRICTION;
+		for (int i = 0; i < upgradeShops.size(); i++) {
+			Vector v = upgradeShops.get(i);
+			if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
+				money--;
+				if (i % 4 == 0) {// Top speed
+					money_in_speed++;
+					taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_speed + 1) + Taxi.MAX_MAX_SPEED;
+				} else if (i % 4 == 1) {// Acceleration
+					money_in_acceleration++;
+					taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_acceleration + 1) + Taxi.MAX_ACCELERATION;
+				} else if (i % 4 == 2) {// Max gas
+					money_in_gas++;
+					taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+				} else if (i % 4 == 3) {// Friction
+					money_in_friction++;
+					taxi.friction = -(Taxi.MAX_FRICTION - Taxi.START_FRICTION) / (.01 * money_in_friction + 1) + Taxi.MAX_FRICTION;
+				}
+			}
 		}
 
 		if (trackInvestment >= TRACK_PRICE) {
@@ -661,27 +643,26 @@ public class TaxiGame extends JPanel {
 			drawMapOval(g, v.x, v.y, 50, 50, false);
 		}
 		// upgrade shops
-		Vector v;
-		// top speed
-		v = upgradeShops.get(0);
-		g.setColor(Color.green);
-		drawMapOval(g, v.x, v.y, 10, 10, true);
-		drawMapOval(g, v.x, v.y, 50, 50, false);
-		// acceleration
-		v = upgradeShops.get(1);
-		g.setColor(Color.red);
-		drawMapOval(g, v.x, v.y, 10, 10, true);
-		drawMapOval(g, v.x, v.y, 50, 50, false);
-		// max gas
-		v = upgradeShops.get(2);
-		g.setColor(Color.pink);
-		drawMapOval(g, v.x, v.y, 10, 10, true);
-		drawMapOval(g, v.x, v.y, 50, 50, false);
-		// friction
-		v = upgradeShops.get(3);
-		g.setColor(Color.magenta);
-		drawMapOval(g, v.x, v.y, 10, 10, true);
-		drawMapOval(g, v.x, v.y, 50, 50, false);
+		for (int i = 0; i < upgradeShops.size(); i++) {
+			Vector v = upgradeShops.get(i);
+			if (i % 4 == 0) {
+				g.setColor(Color.green);
+				drawMapOval(g, v.x, v.y, 10, 10, true);
+				drawMapOval(g, v.x, v.y, 50, 50, false);
+			} else if (i % 4 == 1) {
+				g.setColor(Color.red);
+				drawMapOval(g, v.x, v.y, 10, 10, true);
+				drawMapOval(g, v.x, v.y, 50, 50, false);
+			} else if (i % 4 == 2) {
+				g.setColor(Color.pink);
+				drawMapOval(g, v.x, v.y, 10, 10, true);
+				drawMapOval(g, v.x, v.y, 50, 50, false);
+			} else if (i % 4 == 3) {
+				g.setColor(Color.magenta);
+				drawMapOval(g, v.x, v.y, 10, 10, true);
+				drawMapOval(g, v.x, v.y, 50, 50, false);
+			}
+		}
 
 		// Draw world particles
 		for (Particle p : particles) {
@@ -871,30 +852,6 @@ public class TaxiGame extends JPanel {
 		}
 	}
 
-	private static void generateUpgradeShops() {
-		int lowerXY = 4;
-		int higherXY = 8;
-		for (int i = 0; i < upgradeShopCount; i++) {
-			boolean validVector = false;
-			Vector v = null;
-			while (!validVector) {
-				double randX = ((double) ((int) (Math.random() * (higherXY - lowerXY)) + lowerXY) + 0.5) * TILE_SIZE + (Math.random() < 0.5 ? 15 : -15);
-				double randY = ((double) ((int) (Math.random() * (higherXY - lowerXY)) + lowerXY) + 0.5) * TILE_SIZE + (Math.random() < 0.5 ? 15 : -15);
-				v = new Vector(randX, randY);
-				validVector = true;
-				for (int j = 0; j < locationsOfInterest.size(); j++) {
-					for (int k = 0; k < locationsOfInterest.get(j).size(); k++) {
-						if (v.distance2(locationsOfInterest.get(j).get(k)) < 50 * 50) {
-							validVector = false;
-						}
-					}
-				}
-				if (v.distance2(taxi.location) < 50 * 50) validVector = false;
-			}
-			upgradeShops.add(v);
-		}
-	}
-
 	private int getNextDir() {
 		Vector taxiModTile = new Vector(taxi.location.x % TILE_SIZE, taxi.location.y % TILE_SIZE);
 		int hts = TILE_SIZE / 2;
@@ -1014,4 +971,22 @@ public class TaxiGame extends JPanel {
 		return ret;
 	}
 
+	public static void addTrack(int x, int y) {
+		tracks[x][y] = plannedTracks[x][y];
+		numTracks++;
+
+		if (numTracks == 2) {
+			trackShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		} else if (numTracks == 8) {
+			gasStations.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		} else if (numTracks % 20 == 10) {
+			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		} else if (numTracks % 20 == 12) {
+			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		} else if (numTracks % 20 == 15) {
+			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		} else if (numTracks % 20 == 18) {
+			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+		}
+	}
 }
