@@ -79,7 +79,20 @@ public class Vector {
 	 * @return The new vector sum
 	 */
 	public Vector plus(Vector v) {
-		return new Vector(x + v.x, y + v.y);
+		return this.plus(v.x, v.y);
+	}
+
+	/**
+	 * Creates a new vector that is the sum of this and the vector (x, y)
+	 * 
+	 * @param x
+	 *            The x to be added
+	 * @param y
+	 *            The y to be added
+	 * @return The new vector sum
+	 */
+	public Vector plus(double x, double y) {
+		return new Vector(this.x + x, this.y + y);
 	}
 
 	/**
@@ -133,9 +146,9 @@ public class Vector {
 	}
 
 	/**
-	 * Returns the square of the distance between this vector and v. Square
-	 * roots are computationally slow, so when possible, using distance2
-	 * improves framerate
+	 * Returns the square of the distance between this vector and v. Square roots
+	 * are computationally slow, so when possible, using distance2 improves
+	 * framerate
 	 * 
 	 * @param v
 	 *            The vector for distance calculation
