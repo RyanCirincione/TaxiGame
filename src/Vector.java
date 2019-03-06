@@ -179,6 +179,18 @@ public class Vector {
 	}
 
 	/**
+	 * Returns a new vector that is a scaled version of this vector
+	 * 
+	 * @param s
+	 *            The scalar value
+	 * @return The new scaled vector
+	 */
+	public Vector rotate(double rads)
+	{
+	    return new Vector(x * Math.cos(rads) - y * Math.sin(rads), x * Math.sin(rads) + y * Math.cos(rads));
+	}
+	
+	/**
 	 * Converts this vector to a string of the form <x, y>
 	 * 
 	 * @return A string of the format "<" + x + ", " + y + ">"

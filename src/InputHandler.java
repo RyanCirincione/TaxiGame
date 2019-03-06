@@ -20,7 +20,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			left = true;
 			break;
 		case KeyEvent.VK_S:
-			if (!down && TaxiGame.taxiVelocity.length() < 0.0001 && !TaxiGame.paused) {
+			if (!down && TaxiGame.taxi.velocity.length() < 0.0001 && !TaxiGame.paused) {
 				TaxiGame.cameraAngle += Math.PI;
 			}
 			down = true;
@@ -52,7 +52,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			TaxiGame.paused = !TaxiGame.paused;
 			break;
 		case KeyEvent.VK_SPACE:
-			if (TaxiGame.taxiVelocity.length() < 0.0000001 && TaxiGame.gas < 0.000001) {
+			if (TaxiGame.taxi.velocity.length() < 0.0000001 && TaxiGame.taxi.gas < 0.000001) {
 				TaxiGame.mainMenu = true;
 			}
 			break;
@@ -70,7 +70,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			if (TaxiGame.zoom < TaxiGame.MAX_ZOOM) TaxiGame.zoom += 0.25;
 			break;
 		case KeyEvent.VK_X:
-			if (TaxiGame.zoom > TaxiGame.MIN_ZOOM) TaxiGame.zoom -= 0.25;  
+			if (TaxiGame.zoom > TaxiGame.MIN_ZOOM) TaxiGame.zoom -= 0.25;
 			break;
 		case KeyEvent.VK_C:
 			TaxiGame.zoom = 1;
@@ -82,7 +82,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 			TaxiGame.trackStock++;
 			break;
 		case KeyEvent.VK_O:
-			TaxiGame.gas = TaxiGame.MAX_GAS;
+			TaxiGame.taxi.gas = TaxiGame.taxi.maxGas;
 			break;
 		case KeyEvent.VK_P:
 			TaxiGame.money += 100;
@@ -113,7 +113,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		if (TaxiGame.mainMenu && TaxiGame.newGameButton.contains(e.getX(), e.getY())) {
 			TaxiGame.mainMenu = false;
-			synchronized(TaxiGame.generationLock) {
+			synchronized (TaxiGame.generationLock) {
 				TaxiGame.startNewGame();
 			}
 		}
