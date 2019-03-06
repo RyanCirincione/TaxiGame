@@ -1,3 +1,6 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 
 public class Customer {
 	public Vector position, destination;
@@ -50,10 +53,12 @@ public class Customer {
 		if (TaxiGame.taxiVelocity.length() < 0.5 && pickedUp && !droppedOff) {
 			double d = TaxiGame.taxiLocation.distance2(destination);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
+				double earnings = (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
+				
 				pickedUp = false;
 				droppedOff = true;
 				position.set(TaxiGame.taxiLocation);
-				TaxiGame.income += (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
+				TaxiGame.income += earnings;
 
 				if (anger < 300) {
 					TaxiGame.rating += 0.2;
@@ -63,6 +68,37 @@ public class Customer {
 					TaxiGame.rating += 0.03;
 				} else if (anger < 3600) {
 					TaxiGame.rating += 0.011;
+				}
+
+				for (int i = 0; i < (int) earnings; i++) {
+					Vector v = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+					v.setLength(4 + 5 * Math.random());
+
+					TaxiGame.particles.add(new Particle(new Vector(TaxiGame.S_WIDTH/2, TaxiGame.S_HEIGHT/2), true) {
+						Vector vel;
+
+						{
+							vel = v;
+						}
+
+						public void update() {
+							pos = pos.plus(vel);
+							if (age > 15) {
+								vel = vel.setLength(vel.length()*0.92).plus(new Vector(30-pos.x, 30-pos.y).setLength(age/20.0));
+							}
+							
+							if(pos.x < 30 && pos.y < 30) {
+								remove = true;
+								TaxiGame.income++;
+							}
+						}
+
+						public void paint(Graphics2D g) {
+							g.setColor(new Color(0, 230, 0, 255 - age / 15));
+							g.setFont(new Font("Times New Roman", Font.BOLD, 10));
+							g.drawString("$", (int) (pos.x), (int) (pos.y));
+						}
+					});
 				}
 			}
 		}

@@ -59,6 +59,7 @@ public class TaxiGame extends JPanel {
 	public static int upgradeShopCount = 4;
 	public static ArrayList<Vector> trackShops, gasStations, upgradeShops;
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
+	public static ArrayList<Particle> particles;
 	public static ArrayList<Customer> customers;
 	public static Rectangle newGameButton;
 	public static Object generationLock;
@@ -89,6 +90,7 @@ public class TaxiGame extends JPanel {
 		rating = 3.0;
 		trackStock = 0;
 		cameraAngle = 0;
+		particles = new ArrayList<Particle>();
 		trackShops = new ArrayList<Vector>();
 		gasStations = new ArrayList<Vector>();
 		upgradeShops = new ArrayList<Vector>();
@@ -265,6 +267,44 @@ public class TaxiGame extends JPanel {
 		} else if (rating > MAX_RATING) {
 			rating = MAX_RATING;
 		}
+
+		// Create spark particles when breaking
+		if (input.down && Math.random() < 0.3 && taxiVelocity.length() > 1) {
+			Vector ve = taxiVelocity.scale(-1).plus(Math.random() * 2 - 1, Math.random() * 2 - 1);
+			ve.setLength(ve.length() * 0.6);
+
+			particles.add(new Particle(taxiLocation.clone()) {
+				Vector vel;
+
+				public void update() {
+					{
+						vel = ve;
+					}
+
+					pos = pos.plus(vel);
+
+					if (age > 17) {
+						remove = true;
+					}
+				}
+
+				public void paint(Graphics2D g) {
+					g.setColor(Color.yellow);
+					g.fillOval((int) (pos.x), (int) (pos.y), 2, 2);
+				}
+			});
+		}
+
+		Iterator<Particle> iterP = particles.iterator();
+		while (iterP.hasNext()) {
+			Particle p = iterP.next();
+
+			p.age++;
+			p.update();
+			if (p.remove) {
+				iterP.remove();
+			}
+		}
 	}
 
 	public void paintComponent(Graphics gr) {
@@ -374,6 +414,13 @@ public class TaxiGame extends JPanel {
 		drawMapOval(g, v.x, v.y, 10, 10, true);
 		drawMapOval(g, v.x, v.y, 50, 50, false);
 
+		// Draw world particles
+		for (Particle p : particles) {
+			if (!p.UI) {
+				p.paint(g);
+			}
+		}
+
 		// fun stuff
 		for (int i = 0; i < clouds.length; i++) {
 			if (clouds[i].actuallyBird) {
@@ -392,6 +439,7 @@ public class TaxiGame extends JPanel {
 		g.translate(-S_WIDTH / 2, -S_HEIGHT / 2);
 
 		// Draw money
+		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
 
@@ -414,10 +462,18 @@ public class TaxiGame extends JPanel {
 		g.setColor(Color.gray);
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
 		g.setColor(Color.black);
+		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.drawString("E", 20, S_HEIGHT - 20);
 		g.drawString("F", 94, S_HEIGHT - 20);
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((MAX_GAS - gas) / MAX_GAS * Math.PI)) + 60, (int) -(40 * Math.sin((MAX_GAS - gas) / MAX_GAS * Math.PI)) + S_HEIGHT - 20);
+
+		// Draw UI particles
+		for (Particle p : particles) {
+			if (p.UI) {
+				p.paint(g);
+			}
+		}
 
 		// Draw Game Over
 		if (taxiVelocity.length() < 0.0000001 && gas < 0.000001) {
