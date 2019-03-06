@@ -66,6 +66,7 @@ public class TaxiGame extends JPanel {
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
 	public static ArrayList<Particle> particles;
 	public static ArrayList<Customer> customers;
+	public static ArrayList<Hotdog> hotdogs;
 	public static Rectangle newGameButton;
 	public static Object generationLock;
 	public static Taxi taxi = new Taxi();
@@ -109,6 +110,7 @@ public class TaxiGame extends JPanel {
 		trackInvestment = 0;
 		numTracks = 0;
 		customers = new ArrayList<Customer>();
+		
 		taxi.location = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxi.start();
 		camera = taxi.location.clone();
@@ -154,12 +156,22 @@ public class TaxiGame extends JPanel {
 		}
 
 		generateClouds();
+		
+		hotdogs = new ArrayList<Hotdog>();
+		hotdogs.add(new Hotdog());
+		hotdogs.get(0).location = new Vector(5.5 * TILE_SIZE, 4.5 * TILE_SIZE);
+		hotdogs.get(0).spawn();
 	}
 
 	public void tick() {
 		if (paused || mainMenu) return;
 
 		taxi.tick();
+		
+		// Hotdogs
+		for (Hotdog hd : hotdogs) {
+			hd.tick();
+		}
 
 		// Always have 4 clients to pick up
 		while (customers.size() < 4) {
@@ -625,6 +637,13 @@ public class TaxiGame extends JPanel {
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2, Customer.PICKUP_RADIUS * 2, false);
 			}
 		}
+		
+		// Draw hotdogs
+		for (Hotdog hd : hotdogs) {
+			Vector c = hd.location;
+			g.setColor(Color.orange);
+			drawMapOval(g, c.x, c.y, hd.radius, hd.radius, true);
+		}
 
 		// Draw shops
 		g.setColor(new Color(25, 0, 255));
@@ -692,6 +711,8 @@ public class TaxiGame extends JPanel {
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
+		
+		g.drawString(Boolean.toString(hotdogs.get(0).collision),50,50);
 
 		// Draw track stock
 		g.drawString("" + trackStock, 5, 25);
