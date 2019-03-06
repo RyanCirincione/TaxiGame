@@ -1,8 +1,20 @@
 public class TrackObject {
 	Vector location = new Vector(0, 0), velocity = new Vector(0, 0), destination = new Vector(0, 0);
+	
 	// If the taxi ever flies off the rail, make these decimals even smaller as long
 	// as the game still functions
 	double maxSpeed = 2.0, friction = .997;
+	
+	public void spawn() {
+		int x = (int) (location.x / TaxiGame.TILE_SIZE);
+		int y = (int) (location.y / TaxiGame.TILE_SIZE);
+		if (TaxiGame.plannedTracks[x][y].right)
+			location = new Vector((x+1)*TaxiGame.TILE_SIZE,(y+0.5)*TaxiGame.TILE_SIZE);
+		else if (TaxiGame.plannedTracks[x][y].up)
+			location = new Vector((x+0.5)*TaxiGame.TILE_SIZE,y*TaxiGame.TILE_SIZE);
+		else if (TaxiGame.plannedTracks[x][y].left)
+			location = new Vector(x*TaxiGame.TILE_SIZE,(y+0.5)*TaxiGame.TILE_SIZE);
+	}
 
 	public void tick() {
 		final boolean HORIZONTALLY_ALIGNED = Math.abs(location.y % TaxiGame.TILE_SIZE - TaxiGame.TILE_SIZE / 2) < 0.0000000001;
