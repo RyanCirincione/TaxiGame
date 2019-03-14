@@ -274,6 +274,7 @@ public class TaxiGame extends JPanel {
 		if (trackInvestment >= TRACK_PRICE) {
 			trackInvestment -= TRACK_PRICE;
 			trackStock++;
+			Sound.playSound("res/money.wav");
 		}
 
 		if (taxi.gas < 0) {
