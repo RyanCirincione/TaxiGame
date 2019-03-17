@@ -90,6 +90,9 @@ public class Customer {
 							if(pos.x < 30 && pos.y < 30) {
 								remove = true;
 								TaxiGame.income++;
+								if(Math.random() < 0.5) {
+									Sound.playSound("res/money.wav");
+								}
 							}
 						}
 

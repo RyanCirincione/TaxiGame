@@ -47,8 +47,7 @@ public class Taxi extends TrackObject {
 	@Override
 	public void noTrack() {
 		if (TaxiGame.trackStock > 0) {
-			TaxiGame.tracks[(int) (destination.x / TaxiGame.TILE_SIZE)][(int) (destination.y
-					/ TaxiGame.TILE_SIZE)] = TaxiGame.plannedTracks[(int) (destination.x / TaxiGame.TILE_SIZE)][(int) (destination.y / TaxiGame.TILE_SIZE)];
+			TaxiGame.addTrack((int) (destination.x / TaxiGame.TILE_SIZE), (int) (destination.y / TaxiGame.TILE_SIZE));
 			TaxiGame.trackStock--;
 		} else {
 			velocity.setLength(0);
