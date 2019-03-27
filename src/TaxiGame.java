@@ -110,7 +110,7 @@ public class TaxiGame extends JPanel {
 		trackInvestment = 0;
 		numTracks = 0;
 		customers = new ArrayList<Customer>();
-		
+
 		taxi.location = new Vector(5.5 * TILE_SIZE, 5.5 * TILE_SIZE);
 		taxi.start();
 		camera = taxi.location.clone();
@@ -156,7 +156,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		generateClouds();
-		
+
 		hotdogs = new ArrayList<Hotdog>();
 		hotdogs.add(new Hotdog());
 		hotdogs.get(0).location = new Vector(5.5 * TILE_SIZE, 4.5 * TILE_SIZE);
@@ -167,7 +167,7 @@ public class TaxiGame extends JPanel {
 		if (paused || mainMenu) return;
 
 		taxi.tick();
-		
+
 		// Hotdogs
 		for (Hotdog hd : hotdogs) {
 			hd.tick();
@@ -242,10 +242,40 @@ public class TaxiGame extends JPanel {
 
 		// Buy gas
 		for (Vector v : gasStations) {
-			if (taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
+			if (taxi.location.distance2(v) <= 30 * 30 && taxi.velocity.length() < 0.5) {
 				if (money > 0 && taxi.gas < taxi.maxGas - 0.5) {
 					money--;
 					taxi.gas += 0.3;
+
+					if (Math.random() < 0.7) {
+						Vector velo = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+						velo.setLength(4 + 5 * Math.random());
+
+						particles.add(new Particle(new Vector(S_WIDTH / 2, S_HEIGHT / 2), true) {
+							Vector vel;
+
+							{
+								vel = velo;
+							}
+
+							public void update() {
+								pos = pos.plus(velo);
+
+								if (age == 10) {
+									vel.set(-pos.x, S_HEIGHT - pos.y).setLength(30);
+								}
+
+								if (pos.x < 30 || pos.y > S_HEIGHT - 30) {
+									remove = true;
+								}
+							}
+
+							public void paint(Graphics2D g) {
+								g.setColor(new Color(175, 150, 50));
+								g.fillOval((int) pos.x, (int) pos.y, 6, 6);
+							}
+						});
+					}
 				}
 			}
 		}
@@ -638,7 +668,7 @@ public class TaxiGame extends JPanel {
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2, Customer.PICKUP_RADIUS * 2, false);
 			}
 		}
-		
+
 		// Draw hotdogs
 		for (Hotdog hd : hotdogs) {
 			Vector c = hd.location;
@@ -659,8 +689,8 @@ public class TaxiGame extends JPanel {
 		}
 		g.setColor(new Color(175, 150, 50));
 		for (Vector v : gasStations) {
-			drawMapOval(g, v.x, v.y, 10, 10, true);
-			drawMapOval(g, v.x, v.y, 50, 50, false);
+			g.fillRect((int) v.x - 5, (int) v.y - 5, 10, 10);
+			drawMapOval(g, v.x, v.y, 60, 60, false);
 		}
 		// upgrade shops
 		for (int i = 0; i < upgradeShops.size(); i++) {
@@ -712,8 +742,8 @@ public class TaxiGame extends JPanel {
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
-		
-		g.drawString(Boolean.toString(hotdogs.get(0).collision),50,50);
+
+		g.drawString(Boolean.toString(hotdogs.get(0).collision), 50, 50);
 
 		// Draw track stock
 		g.drawString("" + trackStock, 5, 25);
@@ -731,7 +761,7 @@ public class TaxiGame extends JPanel {
 		drawString(g, "Max Speed: " + taxi.maxSpeed + "\nAcceleration: " + taxi.acceleration + "\nMAX_GAS: " + taxi.maxGas + "\nFRICTION: " + taxi.friction, 5, 38);
 
 		// Draw gas
-		g.setColor(Color.gray);
+		g.setColor(new Color(175, 150, 50));
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
 		g.setColor(Color.black);
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
@@ -766,6 +796,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Draw Game Over
+		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		if (taxi.velocity.length() < 0.0000001 && taxi.gas < 0.000001) {
 			g.setColor(Color.red);
 			g.drawString("Game Over (Press SPACE to return to menu)", S_WIDTH / 2 - 140, 20);
