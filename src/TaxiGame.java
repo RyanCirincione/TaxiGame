@@ -118,7 +118,7 @@ public class TaxiGame extends JPanel {
 		clouds = new Cloud[30];
 		predictStartLoop = false;
 		predictTracks = new boolean[30][30];
-		predictTracksArray = new Vector[30];
+		predictTracksArray = new Vector[5];
 		predictEnters = new int[30][30];
 		predictExits = new int[30][30];
 		nextTrack = new Vector(0, 0);
