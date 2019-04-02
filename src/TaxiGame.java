@@ -814,6 +814,7 @@ public class TaxiGame extends JPanel {
 
 		// Draw help
 		g.setColor(Color.black);
+		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.drawString("Hold H to show controls", 150, 12);
 		if (input.help) {
 			g.setColor(new Color(255, 255, 255, 200));
@@ -979,7 +980,7 @@ public class TaxiGame extends JPanel {
 	private static void drawMapLine(Graphics2D graphics, double lineX1, double lineY1, double lineX2, double lineY2, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
 		double finalZoom = zoomLevel;
-		graphics.drawLine((int) (finalZoom * lineX1), (int) (finalZoom * lineY1), (int) (finalZoom * lineX2), (int) (finalZoom * lineY2));
+		graphics.drawLine((int) Math.round(finalZoom * lineX1), (int) Math.round(finalZoom * lineY1), (int) Math.round(finalZoom * lineX2), (int) Math.round(finalZoom * lineY2));
 	}
 
 	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng) {
@@ -989,7 +990,8 @@ public class TaxiGame extends JPanel {
 	private static void drawMapArc(Graphics2D graphics, double arcX, double arcY, double arcW, double arcH, double startAng, double endAng, double zoomLevel) {
 		if (visualZoom > zoomLevel && !(visualZoom > 1 && zoomLevel == 1)) return;
 		double finalZoom = zoomLevel;
-		graphics.drawArc((int) (finalZoom * arcX), (int) (finalZoom * arcY), (int) (finalZoom * arcW), (int) (finalZoom * arcH), (int) (startAng), (int) (endAng));
+		graphics.drawArc((int) Math.round(finalZoom * arcX), (int) Math.round(finalZoom * arcY), (int) Math.round(finalZoom * arcW), (int) Math.round(finalZoom * arcH),
+				(int) (startAng), (int) (endAng));
 	}
 
 	// for ovals, ovalX and ovalY are the center of the oval. They also take a
