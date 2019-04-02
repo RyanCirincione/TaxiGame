@@ -61,7 +61,6 @@ public class TaxiGame extends JPanel {
 	public static boolean paused, mainMenu;
 	public static InputHandler input;
 	public static Vector taxiPredVelocity = new Vector(0, 1), taxiTile;
-	public static int upgradeShopCount = 4;
 	public static ArrayList<Vector> trackShops, gasStations, upgradeShops;
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
 	public static ArrayList<Particle> particles;
