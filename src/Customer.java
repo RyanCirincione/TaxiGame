@@ -174,6 +174,6 @@ public class Customer {
 	public static boolean isPointNearTrack(Vector v) {
 		int tx = (int) (v.x / TaxiGame.TILE_SIZE), ty = (int) (v.y / TaxiGame.TILE_SIZE);
 
-		return v.distance(new Vector((tx + 0.5) * TaxiGame.TILE_SIZE, (ty + 0.5) * TaxiGame.TILE_SIZE)) < PICKUP_RADIUS - 5;
+		return v.distance(new Vector((tx + 0.5) * TaxiGame.TILE_SIZE, (ty + 0.5) * TaxiGame.TILE_SIZE)) < PICKUP_RADIUS - 8;
 	}
 }

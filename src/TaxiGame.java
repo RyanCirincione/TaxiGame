@@ -201,7 +201,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Update visual camera angle
-		visualCameraAngle += camAdd / 4;
+		visualCameraAngle += camAdd / 16;
 
 		// Adjust camera
 		camera = camera.plus(taxi.location.minus(camera).scale(0.05));
