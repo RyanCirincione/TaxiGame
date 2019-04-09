@@ -647,7 +647,7 @@ public class TaxiGame extends JPanel {
 		// Draw taxi
 		g.setColor(Color.yellow);
 		drawMapOval(g, taxi.location.x, taxi.location.y, 10, 10, true);
-
+		
 		// Draw clients
 		for (Customer cust : customers) {
 			Vector c = cust.position, d = cust.destination;
