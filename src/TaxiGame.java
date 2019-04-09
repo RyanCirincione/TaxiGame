@@ -43,10 +43,10 @@ public class TaxiGame extends JPanel {
 		}, 0, 1000 / 60);
 	}
 
-	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
+	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25, MONEY_SPEND_SPEED = 3;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static double SCREEN_SCALE = 1.75, MAX_RATING = 5.0;
-	public static int money_in_engine = 0, money_in_gas = 0, money_in_friction = 0;
+	public static int money_in_engine = 0, money_in_gas = 0, money_in_friction = 0, moneySpendCooldown;
 	public static Track[][] tracks, plannedTracks;
 	public static boolean predictStartLoop;
 	public static boolean[][] predictTracks;
@@ -104,6 +104,7 @@ public class TaxiGame extends JPanel {
 		locationsOfInterest.add(trackShops);
 		locationsOfInterest.add(gasStations);
 		locationsOfInterest.add(upgradeShops);
+		moneySpendCooldown = 0;
 		income = 50;
 		money = 0;
 		trackInvestment = 0;
@@ -232,8 +233,9 @@ public class TaxiGame extends JPanel {
 		// Put money in track shops
 		for (Vector v : trackShops) {
 			if (taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-				if (money > 0) {
+				if (money > 0 && moneySpendCooldown == 0) {
 					money--;
+					moneySpendCooldown = MONEY_SPEND_SPEED;
 					trackInvestment++;
 				}
 			}
@@ -242,8 +244,9 @@ public class TaxiGame extends JPanel {
 		// Buy gas
 		for (Vector v : gasStations) {
 			if (taxi.location.distance2(v) <= 30 * 30 && taxi.velocity.length() < 0.5) {
-				if (money > 0 && taxi.gas < taxi.maxGas - 0.5) {
+				if (money > 0 && taxi.gas < taxi.maxGas - 0.5 && moneySpendCooldown == 0) {
 					money--;
+					moneySpendCooldown = MONEY_SPEND_SPEED;
 					taxi.gas += 0.3;
 
 					if (Math.random() < 0.7) {
@@ -282,8 +285,9 @@ public class TaxiGame extends JPanel {
 		// Buy upgrades
 		for (int i = 0; i < upgradeShops.size(); i++) {
 			Vector v = upgradeShops.get(i);
-			if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
+			if (money > 0 && moneySpendCooldown == 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
 				money--;
+				moneySpendCooldown = MONEY_SPEND_SPEED;
 				if (i % 3 == 0) {// Engine
 					money_in_engine++;
 					taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
@@ -310,6 +314,10 @@ public class TaxiGame extends JPanel {
 			rating = 0;
 		} else if (rating > MAX_RATING) {
 			rating = MAX_RATING;
+		}
+		
+		if(moneySpendCooldown > 0) {
+			moneySpendCooldown--;
 		}
 
 		// Create spark particles when breaking
