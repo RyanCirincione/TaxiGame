@@ -290,13 +290,17 @@ public class TaxiGame extends JPanel {
 				moneySpendCooldown = MONEY_SPEND_SPEED;
 				if (i % 3 == 0) {// Engine
 					money_in_engine++;
-					taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
-					taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
+					if (money_in_engine % 30 == 0) {
+						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
+						taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
+					}
 				} else if (i % 3 == 1) {// Fuel tank
 					money_in_gas++;
-					taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+					if (money_in_gas % 30 == 0) {
+						taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+					}
 				} else if (i % 3 == 2) {// Max customers
-					
+
 				}
 			}
 		}
@@ -315,8 +319,8 @@ public class TaxiGame extends JPanel {
 		} else if (rating > MAX_RATING) {
 			rating = MAX_RATING;
 		}
-		
-		if(moneySpendCooldown > 0) {
+
+		if (moneySpendCooldown > 0) {
 			moneySpendCooldown--;
 		}
 
@@ -655,7 +659,7 @@ public class TaxiGame extends JPanel {
 		// Draw taxi
 		g.setColor(Color.yellow);
 		drawMapOval(g, taxi.location.x, taxi.location.y, 10, 10, true);
-		
+
 		// Draw clients
 		for (Customer cust : customers) {
 			Vector c = cust.position, d = cust.destination;
