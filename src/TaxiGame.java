@@ -70,6 +70,7 @@ public class TaxiGame extends JPanel {
 	public static Rectangle newGameButton;
 	public static Object generationLock;
 	public static Taxi taxi;
+	public static int carrying;
 
 	// zoom variables
 	public static double zoom = 1, visualZoom;
@@ -780,7 +781,7 @@ public class TaxiGame extends JPanel {
 		drawString(g, "Max Speed: " + taxi.maxSpeed + "\nAcceleration: " + taxi.acceleration + "\nMAX_GAS: " + taxi.maxGas, 5, 38);
 
 		// Draw customer capacity
-		int carrying = 0;
+		carrying = 0;
 		for (int i = 0; i < customers.size(); i++) {
 			if (customers.get(i).pickedUp) {
 				carrying++;

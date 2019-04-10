@@ -62,7 +62,7 @@ public class Customer {
 		}
 		
 		// if taxi doesnt fully pick up, reset radiusShrink and originalPosition
-		if (!droppedOff && TaxiGame.taxi.velocity.length() >= 0.5 /*&& d >= Math.pow(PICKUP_RADIUS, 2)*/) {
+		if (!droppedOff && (TaxiGame.taxi.velocity.length() >= 0.5 || TaxiGame.carrying >= TaxiGame.taxi.maxCustomers)) {
 			if (radiusShrink < 1) {
 				radiusShrink += 0.1;
 				if (radiusShrink > 1) radiusShrink = 1;
@@ -147,7 +147,6 @@ public class Customer {
 			position = position.lerp(destination, 0.3);
 			visualFade -= 2.5;
 			radiusShrink *= 0.9;
-			System.out.println(radiusShrink);
 		}
 	}
 
