@@ -20,8 +20,15 @@ public class Customer {
 	}
 
 	public void update() {
+		int carrying = 0;
+		for(int i = 0; i < TaxiGame.customers.size(); i++) {
+			if(TaxiGame.customers.get(i).pickedUp) {
+				carrying++;
+			}
+		}
+		
 		// Pick up logic
-		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff) {
+		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff && carrying < TaxiGame.taxi.maxCustomers) {
 			double d = TaxiGame.taxi.location.distance2(position);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				if (d < 5 * 5) {
