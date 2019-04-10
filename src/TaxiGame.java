@@ -53,6 +53,7 @@ public class TaxiGame extends JPanel {
 	public static boolean[][] predictTracks;
 	public static Vector[] predictTracksArray;
 	public static int[][] predictEnters, predictExits;
+	public static int predictThickness = 4;
 	public static double predictOpacity = 0.5;
 	public static boolean predictOpacityUp = true;
 	public static Vector nextTrack;
@@ -226,10 +227,10 @@ public class TaxiGame extends JPanel {
 
 		// PredictOpacity
 		if (predictOpacityUp) {
-			predictOpacity += 0.005;
+			predictOpacity += 0.0075;
 			if (predictOpacity >= 0.75) predictOpacityUp = false;
 		} else {
-			predictOpacity -= 0.005;
+			predictOpacity -= 0.0075;
 			if (predictOpacity <= 0.25) predictOpacityUp = true;
 		}
 
@@ -475,7 +476,7 @@ public class TaxiGame extends JPanel {
 				if (predictTracks[x][y]) {
 					if (x == taxiTile.x && y == taxiTile.y) {
 						g.setColor(new Color(255, 0, 0, (int) (255 * predictOpacity)));
-						g.setStroke(new BasicStroke((int) (1 * visualZoom)));
+						g.setStroke(new BasicStroke((int) (predictThickness * visualZoom)));
 						Vector taxiModTile = new Vector(taxi.location.x % TS, taxi.location.y % TS);
 						double taxiX = taxi.location.x, taxiY = taxi.location.y;
 						double taxiTileX = (taxiTile.x + 0.5) * TS, taxiTileY = (taxiTile.y + 0.5) * TS;
@@ -646,7 +647,7 @@ public class TaxiGame extends JPanel {
 					}
 					if ((x == taxiTile.x && y == taxiTile.y && predictStartLoop) || (!(x == taxiTile.x && y == taxiTile.y) && tracks[x][y] != null)) {
 						g.setColor(new Color(255, 0, 0, (int) (255 * predictOpacity)));
-						g.setStroke(new BasicStroke((int) (1 * visualZoom)));
+						g.setStroke(new BasicStroke((int) (predictThickness * visualZoom)));
 						boolean right = predictEnters[x][y] == 0 || predictExits[x][y] == 0;
 						boolean up = predictEnters[x][y] == 1 || predictExits[x][y] == 1;
 						boolean left = predictEnters[x][y] == 2 || predictExits[x][y] == 2;
@@ -681,12 +682,16 @@ public class TaxiGame extends JPanel {
 			} else if (cust.pickedUp) {
 				
 			} else {
+				g.setColor(cust.goldMember ? new Color(255, 235, 95, 50) : new Color(245, 170, 30, 50));
+				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, true);
+				g.setColor(cust.goldMember ? new Color(255, 235, 95, (int) (cust.fillOpacity * 255)) : new Color(245, 170, 30, (int) (cust.fillOpacity * 255)));
+				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, true);
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
 			}
 			if (cust.pickedUp || cust.droppedOff) {
-				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink)));
+				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink * cust.fillOpacity)));
 				drawMapOval(g, d.x, d.y, TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), true);
 			}
 		}
