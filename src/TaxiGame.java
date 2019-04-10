@@ -68,10 +68,10 @@ public class TaxiGame extends JPanel {
 	public static ArrayList<Hotdog> hotdogs;
 	public static Rectangle newGameButton;
 	public static Object generationLock;
-	public static Taxi taxi = new Taxi();
+	public static Taxi taxi;
 
 	// zoom variables
-	public static double zoom = 1, visualZoom = 100;
+	public static double zoom = 1, visualZoom;
 	public static final double MIN_ZOOM = 0.25, MAX_ZOOM = 2;
 	// clouds
 	public static Cloud[] clouds;
@@ -92,6 +92,8 @@ public class TaxiGame extends JPanel {
 	}
 
 	public static void startNewGame() {
+		taxi = new Taxi();
+		visualZoom = 100.0;
 		paused = false;
 		rating = 3.0;
 		trackStock = 0;
