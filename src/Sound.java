@@ -11,6 +11,10 @@ public class Sound {
 	static Clip snd_placeholder;
 	
 	public Sound() {
+	// TODO Picking up customer
+	// TODO Dropping off customer
+	// TODO Building new track
+	// TODO Braking
 		try {
 			snd_money = AudioSystem.getClip();
 			snd_money.open(AudioSystem.getAudioInputStream(new File("res/money.wav").getAbsoluteFile()));

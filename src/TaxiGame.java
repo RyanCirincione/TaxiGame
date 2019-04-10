@@ -44,10 +44,10 @@ public class TaxiGame extends JPanel {
 	}
 
 	public static Sound sound = new Sound();
-	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
+	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25, MONEY_SPEND_SPEED = 3;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static double SCREEN_SCALE = 1.75, MAX_RATING = 5.0;
-	public static int money_in_engine = 0, money_in_gas = 0, money_in_friction = 0;
+	public static int money_in_engine = 0, money_in_gas = 0, money_in_friction = 0, money_in_capacity = 0, moneySpendCooldown;
 	public static Track[][] tracks, plannedTracks;
 	public static boolean predictStartLoop;
 	public static boolean[][] predictTracks;
@@ -69,10 +69,10 @@ public class TaxiGame extends JPanel {
 	public static ArrayList<Hotdog> hotdogs;
 	public static Rectangle newGameButton;
 	public static Object generationLock;
-	public static Taxi taxi = new Taxi();
+	public static Taxi taxi;
 
 	// zoom variables
-	public static double zoom = 1, visualZoom = 100;
+	public static double zoom = 1, visualZoom;
 	public static final double MIN_ZOOM = 0.25, MAX_ZOOM = 2;
 	// clouds
 	public static Cloud[] clouds;
@@ -93,6 +93,8 @@ public class TaxiGame extends JPanel {
 	}
 
 	public static void startNewGame() {
+		taxi = new Taxi();
+		visualZoom = 100.0;
 		paused = false;
 		rating = 3.0;
 		trackStock = 0;
@@ -105,6 +107,7 @@ public class TaxiGame extends JPanel {
 		locationsOfInterest.add(trackShops);
 		locationsOfInterest.add(gasStations);
 		locationsOfInterest.add(upgradeShops);
+		moneySpendCooldown = 0;
 		income = 50;
 		money = 0;
 		trackInvestment = 0;
@@ -176,7 +179,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Always have 4 clients to pick up
-		while (customers.size() < 4) {
+		while (customers.size() < Math.pow(numTracks, 0.58) - 1) {
 			customers.add(Customer.generateCustomer());
 		}
 
@@ -235,8 +238,9 @@ public class TaxiGame extends JPanel {
 		// Put money in track shops
 		for (Vector v : trackShops) {
 			if (taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
-				if (money > 0) {
+				if (money > 0 && moneySpendCooldown == 0) {
 					money--;
+					moneySpendCooldown = MONEY_SPEND_SPEED;
 					trackInvestment++;
 				}
 			}
@@ -245,8 +249,9 @@ public class TaxiGame extends JPanel {
 		// Buy gas
 		for (Vector v : gasStations) {
 			if (taxi.location.distance2(v) <= 30 * 30 && taxi.velocity.length() < 0.5) {
-				if (money > 0 && taxi.gas < taxi.maxGas - 0.5) {
+				if (money > 0 && taxi.gas < taxi.maxGas - 0.5 && moneySpendCooldown == 0) {
 					money--;
+					moneySpendCooldown = MONEY_SPEND_SPEED;
 					taxi.gas += 0.3;
 
 					if (Math.random() < 0.7) {
@@ -285,17 +290,27 @@ public class TaxiGame extends JPanel {
 		// Buy upgrades
 		for (int i = 0; i < upgradeShops.size(); i++) {
 			Vector v = upgradeShops.get(i);
-			if (money > 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
+			if (money > 0 && moneySpendCooldown == 0 && taxi.location.distance2(v) <= 25 * 25 && taxi.velocity.length() < 0.5) {
 				money--;
+				moneySpendCooldown = MONEY_SPEND_SPEED;
 				if (i % 3 == 0) {// Engine
 					money_in_engine++;
-					taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
-					taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
+					// TODO Add particle when upgrade threshold is reached
+					// TODO Add indicator to how close you are to next upgrade
+					if (money_in_engine % 30 == 0) {
+						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
+						taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
+					}
 				} else if (i % 3 == 1) {// Fuel tank
 					money_in_gas++;
-					taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+					if (money_in_gas % 30 == 0) {
+						taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+					}
 				} else if (i % 3 == 2) {// Max customers
-					
+					money_in_capacity++;
+					if (money_in_capacity % 30 == 0) {
+						taxi.maxCustomers++;
+					}
 				}
 			}
 		}
@@ -313,6 +328,10 @@ public class TaxiGame extends JPanel {
 			rating = 0;
 		} else if (rating > MAX_RATING) {
 			rating = MAX_RATING;
+		}
+
+		if (moneySpendCooldown > 0) {
+			moneySpendCooldown--;
 		}
 
 		// Create spark particles when breaking
@@ -650,7 +669,7 @@ public class TaxiGame extends JPanel {
 		// Draw taxi
 		g.setColor(Color.yellow);
 		drawMapOval(g, taxi.location.x, taxi.location.y, 10, 10, true);
-		
+
 		// Draw clients
 		for (Customer cust : customers) {
 			Vector c = cust.position, d = cust.destination;
@@ -759,6 +778,17 @@ public class TaxiGame extends JPanel {
 
 		// Draw upgradeable stats
 		drawString(g, "Max Speed: " + taxi.maxSpeed + "\nAcceleration: " + taxi.acceleration + "\nMAX_GAS: " + taxi.maxGas, 5, 38);
+
+		// Draw customer capacity
+		int carrying = 0;
+		for (int i = 0; i < customers.size(); i++) {
+			if (customers.get(i).pickedUp) {
+				carrying++;
+			}
+		}
+		g.setFont(new Font("Dialog", Font.PLAIN, 18));
+		drawString(g, "Customers: " + carrying + "/" + taxi.maxCustomers, 5, 80);
+		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 
 		// Draw gas
 		g.setColor(new Color(175, 150, 50));

@@ -22,9 +22,18 @@ public class Customer {
 	}
 
 	public void update() {
-		double d = TaxiGame.taxi.location.distance2(position);
+		int carrying = 0;
+		for(int i = 0; i < TaxiGame.customers.size(); i++) {
+			if(TaxiGame.customers.get(i).pickedUp) {
+				carrying++;
+			}
+		}
+		
+		double d = TaxiGame.taxi.location.distance2(position);		
+		
 		// Pick up logic
-		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff) {
+		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff && carrying < TaxiGame.taxi.maxCustomers) {
+			d = TaxiGame.taxi.location.distance2(position);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				if (d < 5 * 5) {
 					anger = 0;
@@ -52,11 +61,16 @@ public class Customer {
 			}
 		}
 		
-		if (!droppedOff && TaxiGame.taxi.velocity.length() >= 0.5 && d >= Math.pow(PICKUP_RADIUS, 2)) {
-			radiusShrink = 1;
+		// if taxi doesnt fully pick up, reset radiusShrink and originalPosition
+		if (!droppedOff && TaxiGame.taxi.velocity.length() >= 0.5 /*&& d >= Math.pow(PICKUP_RADIUS, 2)*/) {
+			if (radiusShrink < 1) {
+				radiusShrink += 0.1;
+				if (radiusShrink > 1) radiusShrink = 1;
+			}
 			originalPosition = position.clone();
 		}
 		
+		// after being picked up, reset radiusShrink
 		if (pickedUp && !droppedOff) {
 			radiusShrink = 1;
 		}
