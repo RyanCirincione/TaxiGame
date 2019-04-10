@@ -3,26 +3,28 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 
 public class Customer {
-	public Vector position, destination;
+	public Vector position, destination, originalPosition;
 	public boolean pickedUp, droppedOff, goldMember;
 	public int anger;
-	public double visualFade;
+	public double visualFade, radiusShrink;
 	public static double PICKUP_RADIUS = TaxiGame.TILE_SIZE * 5 / 8;
 
 	public Customer(Vector pos, Vector dest, boolean p, boolean d, boolean gold) {
 		position = pos;
+		originalPosition = position.clone();
 		destination = dest;
 		pickedUp = p;
 		droppedOff = d;
 		goldMember = gold;
 		visualFade = 255;
+		radiusShrink = 1;
 		anger = 0;
 	}
 
 	public void update() {
+		double d = TaxiGame.taxi.location.distance2(position);
 		// Pick up logic
 		if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff) {
-			double d = TaxiGame.taxi.location.distance2(position);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				if (d < 5 * 5) {
 					anger = 0;
@@ -45,13 +47,23 @@ public class Customer {
 					}
 				} else {
 					position.set(position.lerp(TaxiGame.taxi.location, 1));
+					radiusShrink = position.distance2(TaxiGame.taxi.location)/originalPosition.distance2(TaxiGame.taxi.location);
 				}
 			}
+		}
+		
+		if (!droppedOff && TaxiGame.taxi.velocity.length() >= 0.5 && d >= Math.pow(PICKUP_RADIUS, 2)) {
+			radiusShrink = 1;
+			originalPosition = position.clone();
+		}
+		
+		if (pickedUp && !droppedOff) {
+			radiusShrink = 1;
 		}
 
 		// Drop off logic
 		if (TaxiGame.taxi.velocity.length() < 0.5 && pickedUp && !droppedOff) {
-			double d = TaxiGame.taxi.location.distance2(destination);
+			d = TaxiGame.taxi.location.distance2(destination);
 			if (d < Math.pow(PICKUP_RADIUS, 2)) {
 				double earnings = (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
 				
@@ -91,7 +103,7 @@ public class Customer {
 								remove = true;
 								TaxiGame.income++;
 								if(Math.random() < 0.5) {
-									Sound.playSound("res/money.wav");
+									TaxiGame.sound.playSound("money");
 								}
 							}
 						}
@@ -120,6 +132,8 @@ public class Customer {
 		if (droppedOff) {
 			position = position.lerp(destination, 0.3);
 			visualFade -= 2.5;
+			radiusShrink *= 0.9;
+			System.out.println(radiusShrink);
 		}
 	}
 

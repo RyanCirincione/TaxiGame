@@ -43,6 +43,7 @@ public class TaxiGame extends JPanel {
 		}, 0, 1000 / 60);
 	}
 
+	public static Sound sound = new Sound();
 	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static double SCREEN_SCALE = 1.75, MAX_RATING = 5.0;
@@ -157,9 +158,11 @@ public class TaxiGame extends JPanel {
 		generateClouds();
 
 		hotdogs = new ArrayList<Hotdog>();
+		/*
 		hotdogs.add(new Hotdog());
 		hotdogs.get(0).location = new Vector(5.5 * TILE_SIZE, 4.5 * TILE_SIZE);
 		hotdogs.get(0).spawn();
+		*/
 	}
 
 	public void tick() {
@@ -300,7 +303,7 @@ public class TaxiGame extends JPanel {
 		if (trackInvestment >= TRACK_PRICE) {
 			trackInvestment -= TRACK_PRICE;
 			trackStock++;
-			Sound.playSound("res/money.wav");
+			sound.playSound("res/money.wav");
 		}
 
 		if (taxi.gas < 0) {
@@ -656,12 +659,15 @@ public class TaxiGame extends JPanel {
 				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 			} else if (cust.pickedUp) {
-				g.setColor(new Color(200, 0, 200, 128));
-				drawMapOval(g, d.x, d.y, TILE_SIZE / 1.5 * 2, TILE_SIZE / 1.5 * 2, true);
+				
 			} else {
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
-				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2, Customer.PICKUP_RADIUS * 2, false);
+				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
+			}
+			if (cust.pickedUp || cust.droppedOff) {
+				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink)));
+				drawMapOval(g, d.x, d.y, TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), true);
 			}
 		}
 
@@ -735,7 +741,9 @@ public class TaxiGame extends JPanel {
 		g.setColor(new Color(20, 20, 20));
 		g.drawString("$" + money, 5, 13);
 
-		g.drawString(Boolean.toString(hotdogs.get(0).collision), 50, 50);
+		for (Hotdog h : hotdogs) {
+			g.drawString(Boolean.toString(h.collision), 50, 50);
+		}
 
 		// Draw track stock
 		g.drawString("" + trackStock, 5, 25);
