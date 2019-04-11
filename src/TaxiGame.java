@@ -164,22 +164,21 @@ public class TaxiGame extends JPanel {
 		}
 
 		generateClouds();
-		
+
 		myCustomers = new Customer[Taxi.MAX_MAX_CAPACITY];
 		myCustomersGold = new boolean[Taxi.MAX_MAX_CAPACITY];
 		myCustomersOpacity = new double[Taxi.MAX_MAX_CAPACITY];
 		for (int i = 0; i < taxi.maxCustomers; i++) {
 			myCustomers[i] = null;
-			myCustomersGold[i] = false; 
+			myCustomersGold[i] = false;
 			myCustomersOpacity[i] = 0;
 		}
-		
+
 		hotdogs = new ArrayList<Hotdog>();
 		/*
-		hotdogs.add(new Hotdog());
-		hotdogs.get(0).location = new Vector(5.5 * TILE_SIZE, 4.5 * TILE_SIZE);
-		hotdogs.get(0).spawn();
-		*/
+		 * hotdogs.add(new Hotdog()); hotdogs.get(0).location = new Vector(5.5 *
+		 * TILE_SIZE, 4.5 * TILE_SIZE); hotdogs.get(0).spawn();
+		 */
 	}
 
 	public void tick() {
@@ -692,14 +691,18 @@ public class TaxiGame extends JPanel {
 				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 			} else if (cust.pickedUp) {
-				
+
 			} else {
-				g.setColor(cust.goldMember ? new Color(255, 235, 95, 50) : new Color(245, 170, 30, 50));
+				// draw static fill
+				g.setColor(cust.goldMember ? new Color(255, 235, 95, (int) (255 * cust.staticFillOpacity)) : new Color(245, 170, 30, (int) (255 * cust.staticFillOpacity)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, true);
+				// draw changing fill
 				g.setColor(cust.goldMember ? new Color(255, 235, 95, (int) (cust.fillOpacity * 255)) : new Color(245, 170, 30, (int) (cust.fillOpacity * 255)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, true);
+				// draw customer
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
+				// draw radius
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
 			}
 			if (cust.pickedUp || cust.droppedOff) {
@@ -818,30 +821,31 @@ public class TaxiGame extends JPanel {
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + 60,
 				(int) -(40 * Math.sin((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + S_HEIGHT - 20);
-		
+
 		// Draw carrying
 		for (int i = 0; i < taxi.maxCustomers; i++) {
 			g.setColor(new Color(0, 0, 0, 100));
-			g.drawOval(10+i*20,S_HEIGHT-100,20,20);
+			g.drawOval(10 + i * 20, S_HEIGHT - 100, 20, 20);
+			double mco = myCustomersOpacity[i];
 			if (myCustomers[i] == null) {
-				if (myCustomersOpacity[i] > 0) {
+				if (mco > 0) {
 					myCustomersOpacity[i] -= 0.05;
 				}
 			} else {
-				if (myCustomersOpacity[i] < 1) {
+				if (mco < 1) {
 					myCustomersOpacity[i] += 0.05;
 				}
 			}
-			if (myCustomersOpacity[i] > 0) {
+			if (mco > 0) {
 				if (!myCustomersGold[i]) {
-					g.setColor(new Color(245, 170, 30, (int) (255 * myCustomersOpacity[i]))); 
+					g.setColor(new Color(245, 170, 30, (int) (255 * mco)));
 				} else {
-					g.setColor(new Color(255, 235, 95, (int) (255 * myCustomersOpacity[i])));
+					g.setColor(new Color(255, 235, 95, (int) (255 * mco)));
 				}
-				g.fillOval(10+i*20,(int) (S_HEIGHT-150+(50*myCustomersOpacity[i])),20,20);
+				g.fillOval(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20);
 			}
 		}
-		
+
 		// Draw compass
 		int startLineX = S_WIDTH - 70;
 		int startLineY = S_HEIGHT - 70;

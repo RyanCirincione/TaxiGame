@@ -6,7 +6,7 @@ public class Customer {
 	public Vector position, destination, originalPosition;
 	public boolean pickedUp, droppedOff, goldMember, justSpawned;
 	public int anger, seatPosition;
-	public double visualFade, radiusShrink, fillRadius, fillOpacity;
+	public double visualFade, radiusShrink, fillRadius, fillOpacity, staticFillOpacity;
 	public static double PICKUP_RADIUS = TaxiGame.TILE_SIZE * 5 / 8;
 
 	public Customer(Vector pos, Vector dest, boolean p, boolean d, boolean gold) {
@@ -21,6 +21,7 @@ public class Customer {
 		radiusShrink = 0;
 		fillRadius = 0;
 		fillOpacity = 0;
+		staticFillOpacity = 0.2;
 		anger = 0;
 		seatPosition = 0;
 	}
@@ -34,14 +35,14 @@ public class Customer {
 			}
 		} else {
 			int carrying = 0;
-			for(int i = 0; i < TaxiGame.customers.size(); i++) {
-				if(TaxiGame.customers.get(i).pickedUp) {
+			for (int i = 0; i < TaxiGame.customers.size(); i++) {
+				if (TaxiGame.customers.get(i).pickedUp) {
 					carrying++;
 				}
 			}
-			
-			double d = TaxiGame.taxi.location.distance2(position);		
-			
+
+			double d = TaxiGame.taxi.location.distance2(position);
+
 			// Pick up logic
 			if (TaxiGame.taxi.velocity.length() < 0.5 && !pickedUp && !droppedOff && carrying < TaxiGame.taxi.maxCustomers) {
 				d = TaxiGame.taxi.location.distance2(position);
@@ -52,7 +53,7 @@ public class Customer {
 						radiusShrink = 0;
 						fillOpacity = 0.5;
 						justSpawned = true;
-						for (int i=0; i < TaxiGame.taxi.maxCustomers; i++) {
+						for (int i = 0; i < TaxiGame.taxi.maxCustomers; i++) {
 							if (TaxiGame.myCustomers[i] == null) {
 								seatPosition = i;
 								TaxiGame.myCustomers[i] = this;
@@ -60,29 +61,29 @@ public class Customer {
 								break;
 							}
 						}
-	
+
 						// Occasionally, create a destination slightly outside the city to force the
 						// player to expand
 						if (Math.random() < 0.3) {
 							Vector newDestination = new Vector(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length,
 									Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 							int expansionRange = 2 + (int) (Math.random() * 2);
-	
+
 							while (!isWithinRange((int) (newDestination.x / TaxiGame.TILE_SIZE), (int) (newDestination.y / TaxiGame.TILE_SIZE), expansionRange)
 									|| TaxiGame.tracks[(int) (newDestination.x / TaxiGame.TILE_SIZE)][(int) (newDestination.y / TaxiGame.TILE_SIZE)] != null
 											&& !isPointNearTrack(newDestination)) {
 								newDestination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 							}
-	
+
 							destination = newDestination;
 						}
 					} else {
 						position.set(position.lerp(TaxiGame.taxi.location, 1));
-						radiusShrink = position.distance2(TaxiGame.taxi.location)/originalPosition.distance2(TaxiGame.taxi.location);
+						radiusShrink = position.distance2(TaxiGame.taxi.location) / originalPosition.distance2(TaxiGame.taxi.location);
 					}
 				}
 			}
-			
+
 			// if taxi doesnt fully pick up, reset radiusShrink and originalPosition
 			if (!droppedOff && (TaxiGame.taxi.velocity.length() >= 0.5 || TaxiGame.carrying >= TaxiGame.taxi.maxCustomers)) {
 				if (radiusShrink < 1) {
@@ -91,26 +92,23 @@ public class Customer {
 				}
 				originalPosition = position.clone();
 			}
-			
+
 			// manage fill
 			if (!pickedUp) {
 				if (d < Math.pow(PICKUP_RADIUS, 2)) {
-					if (fillRadius < 1) {
-						fillRadius += 0.05;
-						if (fillRadius > 1) fillRadius = 1;
-						double targetOpacity = fillRadius / 2;
-						if (fillOpacity < targetOpacity) {
-							fillOpacity += 0.05;
-							if (fillOpacity > targetOpacity) fillOpacity = targetOpacity;
-						}
-					}
-				}
-				else {
+					/*
+					 * if (fillRadius < 1) { fillRadius += 0.05; if (fillRadius > 1) fillRadius = 1;
+					 * double targetOpacity = fillRadius / 2; if (fillOpacity < targetOpacity) {
+					 * fillOpacity += 0.05; if (fillOpacity > targetOpacity) fillOpacity =
+					 * targetOpacity; } }
+					 */
+					if (staticFillOpacity < 0.5) staticFillOpacity += 0.05;
+				} else {
+					if (staticFillOpacity > 0.2) staticFillOpacity -= 0.05;
 					if (fillRadius < 1) {
 						fillRadius += 0.0075;
 						fillOpacity = fillRadius / 4;
-					}
-					else {
+					} else {
 						fillRadius = 1;
 						fillOpacity -= 0.0025;
 						if (fillOpacity <= 0) {
@@ -120,7 +118,7 @@ public class Customer {
 					}
 				}
 			}
-	
+
 			// Drop off logic
 			if (pickedUp && !droppedOff) {
 				d = TaxiGame.taxi.location.distance2(destination);
@@ -130,13 +128,13 @@ public class Customer {
 					}
 					if (TaxiGame.taxi.velocity.length() < 0.5) {
 						double earnings = (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
-						
+
 						TaxiGame.myCustomers[seatPosition] = null;
 						pickedUp = false;
 						droppedOff = true;
 						position.set(TaxiGame.taxi.location);
 						TaxiGame.income += earnings;
-		
+
 						if (anger < 300) {
 							TaxiGame.rating += 0.2;
 						} else if (anger < 900) {
@@ -146,33 +144,33 @@ public class Customer {
 						} else if (anger < 3600) {
 							TaxiGame.rating += 0.011;
 						}
-		
+
 						for (int i = 0; i < (int) earnings; i++) {
 							Vector v = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
 							v.setLength(4 + 5 * Math.random());
-		
-							TaxiGame.particles.add(new Particle(new Vector(TaxiGame.S_WIDTH/2, TaxiGame.S_HEIGHT/2), true) {
+
+							TaxiGame.particles.add(new Particle(new Vector(TaxiGame.S_WIDTH / 2, TaxiGame.S_HEIGHT / 2), true) {
 								Vector vel;
-		
+
 								{
 									vel = v;
 								}
-		
+
 								public void update() {
 									pos = pos.plus(vel);
 									if (age > 15) {
-										vel = vel.setLength(vel.length()*0.92).plus(new Vector(30-pos.x, 30-pos.y).setLength(age/20.0));
+										vel = vel.setLength(vel.length() * 0.92).plus(new Vector(30 - pos.x, 30 - pos.y).setLength(age / 20.0));
 									}
-									
-									if(pos.x < 30 && pos.y < 30) {
+
+									if (pos.x < 30 && pos.y < 30) {
 										remove = true;
 										TaxiGame.income++;
-										if(Math.random() < 0.5) {
+										if (Math.random() < 0.5) {
 											TaxiGame.sound.playSound("money");
 										}
 									}
 								}
-		
+
 								public void paint(Graphics2D g) {
 									g.setColor(new Color(0, 230, 0, 255 - age / 15));
 									g.setFont(new Font("Times New Roman", Font.BOLD, 10));
@@ -187,7 +185,7 @@ public class Customer {
 					}
 				}
 			}
-	
+
 			anger++;
 			if (!pickedUp && anger > 3600) {
 				TaxiGame.rating -= goldMember ? 0.75 : 0.01;
@@ -198,7 +196,7 @@ public class Customer {
 			} else if (anger > 3600 && pickedUp) {
 				TaxiGame.rating -= 0.35 / 3600 * (goldMember ? 3 : 1);
 			}
-	
+
 			if (droppedOff) {
 				position = position.lerp(destination, 0.3);
 				visualFade -= 2.5;

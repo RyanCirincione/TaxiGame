@@ -101,7 +101,7 @@ public class TrackObject {
 			location = destination;
 		}
 	}
-	
+
 	public void noTrack() {
 		velocity.setLength(0);
 	}

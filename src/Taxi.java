@@ -22,7 +22,7 @@ public class Taxi extends TrackObject {
 		if (TaxiGame.tracks[(int) (destination.x / TaxiGame.TILE_SIZE)][(int) (destination.y / TaxiGame.TILE_SIZE)] == null) {
 			noTrack();
 		}
-		
+
 		double l = velocity.length();
 		if (TaxiGame.input.up && gas > 0) {
 			if (l < maxSpeed - acceleration) {
@@ -46,7 +46,7 @@ public class Taxi extends TrackObject {
 			}
 		}
 	}
-	
+
 	@Override
 	public void noTrack() {
 		if (TaxiGame.trackStock > 0) {
