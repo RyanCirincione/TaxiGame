@@ -67,6 +67,9 @@ public class TaxiGame extends JPanel {
 	public static ArrayList<ArrayList<Vector>> locationsOfInterest;
 	public static ArrayList<Particle> particles;
 	public static ArrayList<Customer> customers;
+	public static Customer[] myCustomers;
+	public static boolean[] myCustomersGold;
+	public static double[] myCustomersOpacity;
 	public static ArrayList<Hotdog> hotdogs;
 	public static Rectangle newGameButton;
 	public static Object generationLock;
@@ -161,7 +164,16 @@ public class TaxiGame extends JPanel {
 		}
 
 		generateClouds();
-
+		
+		myCustomers = new Customer[Taxi.MAX_MAX_CAPACITY];
+		myCustomersGold = new boolean[Taxi.MAX_MAX_CAPACITY];
+		myCustomersOpacity = new double[Taxi.MAX_MAX_CAPACITY];
+		for (int i = 0; i < taxi.maxCustomers; i++) {
+			myCustomers[i] = null;
+			myCustomersGold[i] = false; 
+			myCustomersOpacity[i] = 0;
+		}
+		
 		hotdogs = new ArrayList<Hotdog>();
 		/*
 		hotdogs.add(new Hotdog());
@@ -806,7 +818,30 @@ public class TaxiGame extends JPanel {
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + 60,
 				(int) -(40 * Math.sin((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + S_HEIGHT - 20);
-
+		
+		// Draw carrying
+		for (int i = 0; i < taxi.maxCustomers; i++) {
+			g.setColor(new Color(0, 0, 0, 100));
+			g.drawOval(10+i*20,S_HEIGHT-100,20,20);
+			if (myCustomers[i] == null) {
+				if (myCustomersOpacity[i] > 0) {
+					myCustomersOpacity[i] -= 0.05;
+				}
+			} else {
+				if (myCustomersOpacity[i] < 1) {
+					myCustomersOpacity[i] += 0.05;
+				}
+			}
+			if (myCustomersOpacity[i] > 0) {
+				if (!myCustomersGold[i]) {
+					g.setColor(new Color(245, 170, 30, (int) (255 * myCustomersOpacity[i]))); 
+				} else {
+					g.setColor(new Color(255, 235, 95, (int) (255 * myCustomersOpacity[i])));
+				}
+				g.fillOval(10+i*20,(int) (S_HEIGHT-150+(50*myCustomersOpacity[i])),20,20);
+			}
+		}
+		
 		// Draw compass
 		int startLineX = S_WIDTH - 70;
 		int startLineY = S_HEIGHT - 70;

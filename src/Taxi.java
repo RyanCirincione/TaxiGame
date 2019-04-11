@@ -6,6 +6,7 @@ public class Taxi extends TrackObject {
 	public double maxSpeed = START_MAX_SPEED, acceleration = START_ACCELERATION, maxGas = START_MAX_GAS;
 	public int maxCustomers = START_MAX_CAPACITY;
 	public static final double MAX_MAX_SPEED = 10, MAX_ACCELERATION = .2, MAX_MAX_GAS = 40.0, MAX_FRICTION = 1;
+	public static final int MAX_MAX_CAPACITY = 10;
 
 	public void start() {
 		maxSpeed = START_MAX_SPEED;

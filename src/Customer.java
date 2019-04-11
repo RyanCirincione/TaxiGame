@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 public class Customer {
 	public Vector position, destination, originalPosition;
 	public boolean pickedUp, droppedOff, goldMember, justSpawned;
-	public int anger;
+	public int anger, seatPosition;
 	public double visualFade, radiusShrink, fillRadius, fillOpacity;
 	public static double PICKUP_RADIUS = TaxiGame.TILE_SIZE * 5 / 8;
 
@@ -22,6 +22,7 @@ public class Customer {
 		fillRadius = 0;
 		fillOpacity = 0;
 		anger = 0;
+		seatPosition = 0;
 	}
 
 	public void update() {
@@ -51,6 +52,14 @@ public class Customer {
 						radiusShrink = 0;
 						fillOpacity = 0.5;
 						justSpawned = true;
+						for (int i=0; i < TaxiGame.taxi.maxCustomers; i++) {
+							if (TaxiGame.myCustomers[i] == null) {
+								seatPosition = i;
+								TaxiGame.myCustomers[i] = this;
+								TaxiGame.myCustomersGold[i] = goldMember;
+								break;
+							}
+						}
 	
 						// Occasionally, create a destination slightly outside the city to force the
 						// player to expand
@@ -122,6 +131,7 @@ public class Customer {
 					if (TaxiGame.taxi.velocity.length() < 0.5) {
 						double earnings = (int) (Math.random() * (5 + 10 * TaxiGame.rating / TaxiGame.MAX_RATING)) + 5 + 20 * TaxiGame.rating / TaxiGame.MAX_RATING;
 						
+						TaxiGame.myCustomers[seatPosition] = null;
 						pickedUp = false;
 						droppedOff = true;
 						position.set(TaxiGame.taxi.location);
