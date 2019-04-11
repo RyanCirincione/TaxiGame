@@ -96,12 +96,6 @@ public class Customer {
 			// manage fill
 			if (!pickedUp) {
 				if (d < Math.pow(PICKUP_RADIUS, 2)) {
-					/*
-					 * if (fillRadius < 1) { fillRadius += 0.05; if (fillRadius > 1) fillRadius = 1;
-					 * double targetOpacity = fillRadius / 2; if (fillOpacity < targetOpacity) {
-					 * fillOpacity += 0.05; if (fillOpacity > targetOpacity) fillOpacity =
-					 * targetOpacity; } }
-					 */
 					if (staticFillOpacity < 0.5) staticFillOpacity += 0.05;
 				} else {
 					if (staticFillOpacity > 0.2) staticFillOpacity -= 0.05;
