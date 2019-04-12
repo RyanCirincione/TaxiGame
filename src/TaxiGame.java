@@ -1105,16 +1105,25 @@ public class TaxiGame extends JPanel {
 		tracks[x][y] = plannedTracks[x][y];
 		numTracks++;
 
+		double leftRight = Math.signum(Math.random() - 0.5), upDown = Math.signum(Math.random() - 0.5);
+		// If the location would spawn out of reach on curved tracks, put it where the
+		// center of the track would be
+		if (leftRight < 0 && upDown < 0 && !tracks[x][y].left && !tracks[x][y].up) leftRight = upDown = 0;
+		if (leftRight < 0 && upDown > 0 && !tracks[x][y].left && !tracks[x][y].down) leftRight = upDown = 0;
+		if (leftRight > 0 && upDown < 0 && !tracks[x][y].right && !tracks[x][y].up) leftRight = upDown = 0;
+		if (leftRight > 0 && upDown > 0 && !tracks[x][y].right && !tracks[x][y].down) leftRight = upDown = 0;
+		Vector spawnLocation = new Vector((x + 0.5) * TILE_SIZE + 15 * leftRight, (y + 0.5) * TILE_SIZE + 15 * upDown);
+
 		if (numTracks == 2) {
-			trackShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+			trackShops.add(spawnLocation);
 		} else if (numTracks == 8) {
-			gasStations.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+			gasStations.add(spawnLocation);
 		} else if (numTracks % 20 == 7) {
-			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+			upgradeShops.add(spawnLocation);
 		} else if (numTracks % 20 == 14) {
-			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+			upgradeShops.add(spawnLocation);
 		} else if (numTracks % 20 == 19) {
-			upgradeShops.add(new Vector((x + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5), (y + 0.5) * TILE_SIZE + 15 * Math.signum(Math.random() - 0.5)));
+			upgradeShops.add(spawnLocation);
 		}
 	}
 }
