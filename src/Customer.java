@@ -121,7 +121,7 @@ public class Customer {
 			// Drop off logic
 			if (pickedUp && !droppedOff) {
 				d = TaxiGame.taxi.location.distance2(destination);
-				if (d < Math.pow(PICKUP_RADIUS, 2)) {
+				if (d < Math.pow(PICKUP_RADIUS + 1, 2)) {
 					if (fillOpacity < 1) {
 						fillOpacity += 0.05;
 					}
