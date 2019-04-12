@@ -707,7 +707,7 @@ public class TaxiGame extends JPanel {
 			}
 			if (cust.pickedUp || cust.droppedOff) {
 				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink * cust.fillOpacity)));
-				drawMapOval(g, d.x, d.y, TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), true);
+				drawMapOval(g, d.x, d.y, Customer.PICKUP_RADIUS * 2 * (1 / cust.radiusShrink), TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), true);
 			}
 		}
 
