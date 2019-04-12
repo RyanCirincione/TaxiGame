@@ -655,8 +655,7 @@ public class TaxiGame extends JPanel {
 							}
 							break;
 						}
-					}
-					if ((x == taxiTile.x && y == taxiTile.y && predictStartLoop) || (!(x == taxiTile.x && y == taxiTile.y) && tracks[x][y] != null)) {
+					} else if ((x == taxiTile.x && y == taxiTile.y && predictStartLoop) || (!(x == taxiTile.x && y == taxiTile.y) && tracks[x][y] != null)) {
 						g.setColor(new Color(255, 0, 0, (int) (255 * predictOpacity)));
 						g.setStroke(new BasicStroke((int) (predictThickness * visualZoom)));
 						boolean right = predictEnters[x][y] == 0 || predictExits[x][y] == 0;
@@ -678,6 +677,15 @@ public class TaxiGame extends JPanel {
 			}
 		}
 		g.setStroke(new BasicStroke((int) (2 * visualZoom)));
+		if (input.help) {
+			/*
+			 * System.out.println(); for (int i = 0; i < predictTracksArray.length; i++) {
+			 * System.out.print(predictTracksArray[i]); System.out.print("   "); }
+			 */
+			System.out.print(predictEnters[(int) (taxiTile.x)][(int) (taxiTile.y)]);
+			System.out.print("   ");
+			System.out.println(predictExits[(int) (taxiTile.x)][(int) (taxiTile.y)]);
+		}
 
 		// Draw taxi
 		g.setColor(Color.yellow);

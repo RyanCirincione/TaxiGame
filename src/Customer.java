@@ -78,7 +78,8 @@ public class Customer {
 							destination = newDestination;
 						}
 						// also make sure that the destination isn't right on top of the player
-						while (destination.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE || TaxiGame.tracks[(int) destination.x / TaxiGame.TILE_SIZE][(int) destination.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(destination)) {
+						while (destination.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE
+								|| TaxiGame.tracks[(int) destination.x / TaxiGame.TILE_SIZE][(int) destination.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(destination)) {
 							destination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 						}
 					} else {
