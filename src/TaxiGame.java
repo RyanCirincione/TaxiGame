@@ -984,7 +984,7 @@ public class TaxiGame extends JPanel {
 	private int getNextDir() {
 		Vector taxiModTile = new Vector(taxi.location.x % TILE_SIZE, taxi.location.y % TILE_SIZE);
 		int hts = TILE_SIZE / 2;
-		int dir = (int) (mod(Math.round(visualCameraAngle / (Math.PI / 2)) + 1, 4));
+		int dir = (int) (mod(Math.round(cameraAngle / (Math.PI / 2)) + 1, 4));
 		if (dir == 0 && taxiModTile.x < hts - 20 || dir == 1 && taxiModTile.y > hts + 20 || dir == 2 && taxiModTile.x > hts + 20 || dir == 3 && taxiModTile.y < hts - 20) {
 			dir = getTrackDirection(tracks[(int) (taxiTile.x)][(int) (taxiTile.y)], dir);
 		} else {

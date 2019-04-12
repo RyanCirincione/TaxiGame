@@ -28,9 +28,13 @@ public class Sound {
 	public void playSound(String sound) {
 		switch (sound) {
 		case "money":
+			snd_money.stop();
+			snd_money.setFramePosition(0);
 			snd_money.start();
 			break;
 		case "placeholder":
+			snd_placeholder.stop();
+			snd_placeholder.setFramePosition(0);
 			snd_placeholder.start();
 			break;
 		default:

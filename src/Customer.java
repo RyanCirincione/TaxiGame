@@ -77,6 +77,10 @@ public class Customer {
 
 							destination = newDestination;
 						}
+						// also make sure that the destination isn't right on top of the player
+						while (destination.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE || TaxiGame.tracks[(int) destination.x / TaxiGame.TILE_SIZE][(int) destination.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(destination)) {
+							destination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
+						}
 					} else {
 						position.set(position.lerp(TaxiGame.taxi.location, 1));
 						radiusShrink = position.distance2(TaxiGame.taxi.location) / originalPosition.distance2(TaxiGame.taxi.location);
@@ -238,7 +242,8 @@ public class Customer {
 		Vector pos = new Vector(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length),
 				dest = new Vector(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 
-		while (TaxiGame.tracks[(int) pos.x / TaxiGame.TILE_SIZE][(int) pos.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(pos)) {
+		while (pos.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE
+				|| TaxiGame.tracks[(int) pos.x / TaxiGame.TILE_SIZE][(int) pos.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(pos)) {
 			pos.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 		}
 		while (TaxiGame.tracks[(int) dest.x / TaxiGame.TILE_SIZE][(int) dest.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(dest)) {
