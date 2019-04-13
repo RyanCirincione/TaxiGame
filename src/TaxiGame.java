@@ -389,7 +389,7 @@ public class TaxiGame extends JPanel {
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
 		super.paintComponent(g);
-
+		
 		// Draw main menu
 		if (mainMenu) {
 			Stroke oldStroke = g.getStroke();
@@ -400,6 +400,10 @@ public class TaxiGame extends JPanel {
 			g.setStroke(oldStroke);
 
 			return;
+		} else {
+			// Draw background
+			g.setColor(Color.black);
+			g.fillRect(0,0,S_WIDTH,S_HEIGHT);			
 		}
 
 		// Manipulate rendering camera in space
@@ -455,7 +459,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Draw tracks
-		g.setColor(Color.black);
+		g.setColor(Color.white);
 		g.setStroke(new BasicStroke(2));
 		final double TS = TILE_SIZE;
 		final double CR = CURVE_RADIUS;
@@ -469,7 +473,7 @@ public class TaxiGame extends JPanel {
 					g.setColor(new Color(0, 0, 0, 100));
 				} else if (tracks[x][y] != null) {
 					drawThis = true;
-					g.setColor(Color.black);
+					g.setColor(Color.white);
 					g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 				}
 				if (drawThis) {
@@ -702,6 +706,7 @@ public class TaxiGame extends JPanel {
 				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 				// draw radius
+				g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
 			}
 			if (cust.pickedUp || cust.droppedOff) {
@@ -777,7 +782,7 @@ public class TaxiGame extends JPanel {
 
 		// Draw money
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
-		g.setColor(new Color(20, 20, 20));
+		g.setColor(new Color(235, 235, 235));
 		g.drawString("$" + money, 5, 13);
 
 		for (Hotdog h : hotdogs) {
@@ -813,7 +818,7 @@ public class TaxiGame extends JPanel {
 		// Draw gas
 		g.setColor(new Color(175, 150, 50));
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
-		g.setColor(Color.black);
+		g.setColor(Color.white);
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.drawString("E", 20, S_HEIGHT - 20);
 		g.drawString("F", 94, S_HEIGHT - 20);
@@ -823,7 +828,7 @@ public class TaxiGame extends JPanel {
 
 		// Draw carrying
 		for (int i = 0; i < taxi.maxCustomers; i++) {
-			g.setColor(new Color(0, 0, 0, 100));
+			g.setColor(new Color(255, 255, 255, 100));
 			g.drawOval(10 + i * 20, S_HEIGHT - 100, 20, 20);
 			double mco = myCustomersOpacity[i];
 			if (myCustomers[i] == null) {
@@ -850,7 +855,7 @@ public class TaxiGame extends JPanel {
 		int startLineY = S_HEIGHT - 70;
 		int endLineX = (int) (Math.round(S_WIDTH - 70 + 50 * Math.sin(visualCameraAngle)));
 		int endLineY = (int) (Math.round(S_HEIGHT - 70 + 50 * -Math.cos(visualCameraAngle)));
-		g.setColor(Color.black);
+		g.setColor(Color.white);
 		g.setStroke(new BasicStroke(2));
 		g.drawLine(startLineX, startLineY, endLineX, endLineY);
 		startLineX = (int) (Math.round(S_WIDTH - 70 + 5 * Math.cos(visualCameraAngle)));
