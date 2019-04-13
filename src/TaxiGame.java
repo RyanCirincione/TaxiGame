@@ -75,6 +75,7 @@ public class TaxiGame extends JPanel {
 	public static Object generationLock;
 	public static Taxi taxi;
 	public static int carrying;
+	public static Color backColor = Color.black, frontColor = Color.white;
 
 	// zoom variables
 	public static double zoom = 1, visualZoom;
@@ -402,7 +403,7 @@ public class TaxiGame extends JPanel {
 			return;
 		} else {
 			// Draw background
-			g.setColor(Color.black);
+			g.setColor(backColor);
 			g.fillRect(0,0,S_WIDTH,S_HEIGHT);			
 		}
 
@@ -459,7 +460,7 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Draw tracks
-		g.setColor(Color.white);
+		g.setColor(frontColor);
 		g.setStroke(new BasicStroke(2));
 		final double TS = TILE_SIZE;
 		final double CR = CURVE_RADIUS;
@@ -473,7 +474,7 @@ public class TaxiGame extends JPanel {
 					g.setColor(new Color(0, 0, 0, 100));
 				} else if (tracks[x][y] != null) {
 					drawThis = true;
-					g.setColor(Color.white);
+					g.setColor(frontColor);
 					g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 				}
 				if (drawThis) {
@@ -696,18 +697,25 @@ public class TaxiGame extends JPanel {
 			} else if (cust.pickedUp) {
 
 			} else {
+				int cR = cust.goldMember ? 255 : 245;
+				int cG = cust.goldMember ? 235 : 170;
+				int cB = cust.goldMember ? 95 : 30;
 				// draw static fill
-				g.setColor(cust.goldMember ? new Color(255, 235, 95, (int) (255 * cust.staticFillOpacity)) : new Color(245, 170, 30, (int) (255 * cust.staticFillOpacity)));
+				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.staticFillOpacity)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, true);
 				// draw changing fill
-				g.setColor(cust.goldMember ? new Color(255, 235, 95, (int) (cust.fillOpacity * 255)) : new Color(245, 170, 30, (int) (cust.fillOpacity * 255)));
+				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.fillOpacity)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, true);
 				// draw customer
-				g.setColor(cust.goldMember ? new Color(255, 235, 95) : new Color(245, 170, 30));
+				g.setColor(new Color(cR, cG, cB));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 				// draw radius
+				g.setColor(new Color(cR, cG, cB, 125));
 				g.setStroke(new BasicStroke((int) (2 * visualZoom)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
+				// draw anger
+				g.setColor(new Color(cR, cG, cB));
+				drawMapArc(g, c.x - Customer.PICKUP_RADIUS * cust.radiusShrink, c.y - Customer.PICKUP_RADIUS * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger, visualZoom);
 			}
 			if (cust.pickedUp || cust.droppedOff) {
 				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink * cust.fillOpacity)));
@@ -782,7 +790,7 @@ public class TaxiGame extends JPanel {
 
 		// Draw money
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
-		g.setColor(new Color(235, 235, 235));
+		g.setColor(frontColor);
 		g.drawString("$" + money, 5, 13);
 
 		for (Hotdog h : hotdogs) {
@@ -818,7 +826,7 @@ public class TaxiGame extends JPanel {
 		// Draw gas
 		g.setColor(new Color(175, 150, 50));
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
-		g.setColor(Color.white);
+		g.setColor(Color.black);
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.drawString("E", 20, S_HEIGHT - 20);
 		g.drawString("F", 94, S_HEIGHT - 20);
@@ -855,7 +863,7 @@ public class TaxiGame extends JPanel {
 		int startLineY = S_HEIGHT - 70;
 		int endLineX = (int) (Math.round(S_WIDTH - 70 + 50 * Math.sin(visualCameraAngle)));
 		int endLineY = (int) (Math.round(S_HEIGHT - 70 + 50 * -Math.cos(visualCameraAngle)));
-		g.setColor(Color.white);
+		g.setColor(frontColor);
 		g.setStroke(new BasicStroke(2));
 		g.drawLine(startLineX, startLineY, endLineX, endLineY);
 		startLineX = (int) (Math.round(S_WIDTH - 70 + 5 * Math.cos(visualCameraAngle)));

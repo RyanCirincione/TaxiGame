@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 public class Customer {
 	public Vector position, destination, originalPosition;
 	public boolean pickedUp, droppedOff, goldMember, justSpawned;
-	public int anger, seatPosition;
+	public int anger, seatPosition, maxAnger;
 	public double visualFade, radiusShrink, fillRadius, fillOpacity, staticFillOpacity;
 	public static double PICKUP_RADIUS = TaxiGame.TILE_SIZE * 5 / 8;
 
@@ -23,6 +23,7 @@ public class Customer {
 		fillOpacity = 0;
 		staticFillOpacity = 0.2;
 		anger = 0;
+		maxAnger = 3600;
 		seatPosition = 0;
 	}
 
