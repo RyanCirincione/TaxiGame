@@ -4,9 +4,9 @@ import java.awt.Graphics2D;
 
 public class Customer {
 	public Vector position, destination, originalPosition;
-	public boolean pickedUp, droppedOff, goldMember, justSpawned;
-	public int anger, seatPosition, maxAnger;
-	public double visualFade, radiusShrink, fillRadius, fillOpacity, staticFillOpacity;
+	public boolean pickedUp, droppedOff, goldMember, justSpawned, angerBlinkInc;
+	public int anger, seatPosition, maxAnger, blinkAngerThreshold;
+	public double visualFade, radiusShrink, fillRadius, fillOpacity, staticFillOpacity, angerBlink;
 	public static double PICKUP_RADIUS = TaxiGame.TILE_SIZE * 5 / 8;
 
 	public Customer(Vector pos, Vector dest, boolean p, boolean d, boolean gold) {
@@ -17,14 +17,17 @@ public class Customer {
 		droppedOff = d;
 		goldMember = gold;
 		justSpawned = true;
-		visualFade = 255;
+		visualFade = 1;
 		radiusShrink = 0;
 		fillRadius = 0;
 		fillOpacity = 0;
 		staticFillOpacity = 0.2;
 		anger = 0;
 		maxAnger = 3600;
+		blinkAngerThreshold = maxAnger * 3 / 4;
 		seatPosition = 0;
+		angerBlink = 1;
+		angerBlinkInc = false;
 	}
 
 	public void update() {
@@ -33,6 +36,12 @@ public class Customer {
 			if (radiusShrink >= 1) {
 				radiusShrink = 1;
 				justSpawned = false;
+			}
+		} else if (visualFade < 1) {
+			if (!pickedUp && !droppedOff) {
+				radiusShrink -= 0.05;
+				visualFade = radiusShrink;
+				fillRadius = fillRadius * radiusShrink;
 			}
 		} else {
 			int carrying = 0;
@@ -50,6 +59,8 @@ public class Customer {
 				if (d < Math.pow(PICKUP_RADIUS, 2)) {
 					if (d < 5 * 5) {
 						anger = 0;
+						maxAnger *= 2;
+						blinkAngerThreshold *= 2;
 						pickedUp = true;
 						radiusShrink = 0;
 						fillOpacity = 0.5;
@@ -135,13 +146,13 @@ public class Customer {
 						position.set(TaxiGame.taxi.location);
 						TaxiGame.income += earnings;
 
-						if (anger < 300) {
+						if (anger < maxAnger / 8) {
 							TaxiGame.rating += 0.2;
-						} else if (anger < 900) {
+						} else if (anger < maxAnger / 4) {
 							TaxiGame.rating += 0.07;
-						} else if (anger < 1800) {
+						} else if (anger < maxAnger / 2) {
 							TaxiGame.rating += 0.03;
-						} else if (anger < 3600) {
+						} else if (anger < maxAnger) {
 							TaxiGame.rating += 0.011;
 						}
 
@@ -185,21 +196,39 @@ public class Customer {
 					}
 				}
 			}
+			
+			if (anger > blinkAngerThreshold) {
+				if (!angerBlinkInc) {
+					angerBlink -= 0.02;
+					if (angerBlink <= 0.3) {
+						angerBlink = 0.3;
+						angerBlinkInc = true;
+					}
+				} else {
+					angerBlink += 0.02;
+					if (angerBlink >= 1) {
+						angerBlink = 1;
+						angerBlinkInc = false;
+					}
+				}
+			}
 
 			anger++;
-			if (!pickedUp && anger > 3600) {
+			if (!pickedUp && anger > maxAnger) {
 				TaxiGame.rating -= goldMember ? 0.75 : 0.01;
-				visualFade = -1; // Hacky way to get this customer removed
+				visualFade -= 0.01;
+				anger = maxAnger;
 			}
-			if (anger > 7200 && pickedUp) {
-				TaxiGame.rating -= 0.5 / 3600 * (goldMember ? 3 : 1);
+			if (anger > maxAnger && pickedUp) {
+				TaxiGame.rating -= 0.5 / (maxAnger / 2) * (goldMember ? 3 : 1);
+				anger = maxAnger;
 			} else if (anger > 3600 && pickedUp) {
-				TaxiGame.rating -= 0.35 / 3600 * (goldMember ? 3 : 1);
+				TaxiGame.rating -= 0.35 / (maxAnger / 2) * (goldMember ? 3 : 1);
 			}
 
 			if (droppedOff) {
 				position = position.lerp(destination, 0.3);
-				visualFade -= 2.5;
+				visualFade -= 0.01;
 				radiusShrink *= 0.9;
 				fillOpacity = 1;
 			}

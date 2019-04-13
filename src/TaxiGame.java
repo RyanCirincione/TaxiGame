@@ -390,7 +390,7 @@ public class TaxiGame extends JPanel {
 	public void paintComponent(Graphics gr) {
 		Graphics2D g = (Graphics2D) gr;
 		super.paintComponent(g);
-		
+
 		// Draw main menu
 		if (mainMenu) {
 			Stroke oldStroke = g.getStroke();
@@ -404,7 +404,7 @@ public class TaxiGame extends JPanel {
 		} else {
 			// Draw background
 			g.setColor(backColor);
-			g.fillRect(0,0,S_WIDTH,S_HEIGHT);			
+			g.fillRect(0, 0, S_WIDTH, S_HEIGHT);
 		}
 
 		// Manipulate rendering camera in space
@@ -690,9 +690,9 @@ public class TaxiGame extends JPanel {
 		// Draw clients
 		for (Customer cust : customers) {
 			Vector c = cust.position, d = cust.destination;
-
+			// draw dropping off
 			if (cust.droppedOff) {
-				g.setColor(new Color(255, 165, 0, (int) cust.visualFade));
+				g.setColor(new Color(255, 165, 0, (int) (255 * cust.visualFade)));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 			} else if (cust.pickedUp) {
 
@@ -700,23 +700,29 @@ public class TaxiGame extends JPanel {
 				int cR = cust.goldMember ? 255 : 245;
 				int cG = cust.goldMember ? 235 : 170;
 				int cB = cust.goldMember ? 95 : 30;
+				double diameter = Customer.PICKUP_RADIUS * 2 * cust.radiusShrink;
 				// draw static fill
 				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.staticFillOpacity)));
-				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, true);
+				drawMapOval(g, c.x, c.y, diameter, diameter, true);
 				// draw changing fill
 				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.fillOpacity)));
 				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, Customer.PICKUP_RADIUS * 2 * cust.fillRadius, true);
 				// draw customer
-				g.setColor(new Color(cR, cG, cB));
+				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
 				drawMapOval(g, c.x, c.y, 5, 5, true);
 				// draw radius
-				g.setColor(new Color(cR, cG, cB, 125));
+				g.setColor(new Color(cR, cG, cB, (int) (125 * cust.angerBlink)));
 				g.setStroke(new BasicStroke((int) (2 * visualZoom)));
-				drawMapOval(g, c.x, c.y, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, false);
+				drawMapOval(g, c.x, c.y, diameter, diameter, false);
 				// draw anger
-				g.setColor(new Color(cR, cG, cB));
-				drawMapArc(g, c.x - Customer.PICKUP_RADIUS * cust.radiusShrink, c.y - Customer.PICKUP_RADIUS * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, Customer.PICKUP_RADIUS * 2 * cust.radiusShrink, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger, visualZoom);
+				double angerRatio = cust.anger;
+				angerRatio /= cust.maxAnger;
+				cG -= cG * angerRatio;
+				cB -= cB * angerRatio;
+				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
+				drawMapArc(g, c.x - diameter / 2, c.y - diameter / 2, diameter, diameter, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger, 1);
 			}
+			// draw destination
 			if (cust.pickedUp || cust.droppedOff) {
 				g.setColor(new Color(200, 0, 200, (int) (128 * cust.radiusShrink * cust.fillOpacity)));
 				drawMapOval(g, d.x, d.y, Customer.PICKUP_RADIUS * 2 * (1 / cust.radiusShrink), TILE_SIZE / 1.5 * 2 * (1 / cust.radiusShrink), true);
@@ -836,10 +842,11 @@ public class TaxiGame extends JPanel {
 
 		// Draw carrying
 		for (int i = 0; i < taxi.maxCustomers; i++) {
+			Customer cust = myCustomers[i];
 			g.setColor(new Color(255, 255, 255, 100));
 			g.drawOval(10 + i * 20, S_HEIGHT - 100, 20, 20);
 			double mco = myCustomersOpacity[i];
-			if (myCustomers[i] == null) {
+			if (cust == null) {
 				if (mco > 0) {
 					myCustomersOpacity[i] -= 0.05;
 				}
@@ -849,12 +856,25 @@ public class TaxiGame extends JPanel {
 				}
 			}
 			if (mco > 0) {
+				int cR = cust.goldMember ? 255 : 245;
+				int cG = cust.goldMember ? 235 : 170;
+				int cB = cust.goldMember ? 95 : 30;
+				double mcoAnger = mco;
+				if (cust.anger > cust.blinkAngerThreshold) {
+					mcoAnger *= cust.angerBlink;
+				}
 				if (!myCustomersGold[i]) {
-					g.setColor(new Color(245, 170, 30, (int) (255 * mco)));
+					g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
 				} else {
-					g.setColor(new Color(255, 235, 95, (int) (255 * mco)));
+					g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
 				}
 				g.fillOval(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20);
+				double angerRatio = cust.anger;
+				angerRatio /= cust.maxAnger;
+				cG -= cG * angerRatio;
+				cB -= cB * angerRatio;
+				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
+				g.drawArc(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger);
 			}
 		}
 
@@ -997,7 +1017,7 @@ public class TaxiGame extends JPanel {
 		Vector taxiModTile = new Vector(taxi.location.x % TILE_SIZE, taxi.location.y % TILE_SIZE);
 		int hts = TILE_SIZE / 2;
 		int dir = (int) (mod(Math.round(cameraAngle / (Math.PI / 2)) + 1, 4));
-		
+
 		if (dir == 0 && taxiModTile.x < hts - 25 || dir == 1 && taxiModTile.y > hts + 25 || dir == 2 && taxiModTile.x > hts + 25 || dir == 3 && taxiModTile.y < hts - 25) {
 			dir = getTrackDirection(tracks[(int) (taxiTile.x)][(int) (taxiTile.y)], dir);
 		} else {
