@@ -832,6 +832,10 @@ public class TaxiGame extends JPanel {
 		// Draw gas
 		g.setColor(new Color(175, 150, 50));
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
+		if (taxi.gas < taxi.blinkGasThreshold) {
+			g.setColor(new Color(255, 0, 0, (int) (255 * taxi.gasBlink)));
+			g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
+		}
 		g.setColor(Color.black);
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 		g.drawString("E", 20, S_HEIGHT - 20);
@@ -839,7 +843,7 @@ public class TaxiGame extends JPanel {
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + 60,
 				(int) -(40 * Math.sin((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + S_HEIGHT - 20);
-
+		
 		// Draw carrying
 		for (int i = 0; i < taxi.maxCustomers; i++) {
 			Customer cust = myCustomers[i];

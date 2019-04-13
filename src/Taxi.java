@@ -1,6 +1,7 @@
 
 public class Taxi extends TrackObject {
-	public double gas;
+	public boolean gasBlinkInc;
+	public double gas, gasBlink, blinkGasThreshold;
 	public static final double START_MAX_SPEED = 2.0, START_ACCELERATION = 0.03, START_MAX_GAS = 20.0, START_FRICTION = .9985;
 	public static final int START_MAX_CAPACITY = 2;
 	public double maxSpeed = START_MAX_SPEED, acceleration = START_ACCELERATION, maxGas = START_MAX_GAS;
@@ -13,7 +14,10 @@ public class Taxi extends TrackObject {
 		acceleration = START_ACCELERATION;
 		maxGas = START_MAX_GAS;
 		friction = START_FRICTION;
+		gasBlinkInc = false;
 		gas = maxGas;
+		gasBlink = 1;
+		blinkGasThreshold = maxGas / 4;
 	}
 
 	@Override
@@ -43,6 +47,23 @@ public class Taxi extends TrackObject {
 				velocity.setLength(l - acceleration);
 			} else {
 				velocity.setLength(0);
+			}
+		}
+		
+		blinkGasThreshold = maxGas / 4;
+		if (gas < blinkGasThreshold) {
+			if (!gasBlinkInc) {
+				gasBlink -= 0.02;
+				if (gasBlink <= 0.3) {
+					gasBlink = 0.3;
+					gasBlinkInc = true;
+				}
+			} else {
+				gasBlink += 0.02;
+				if (gasBlink >= 1) {
+					gasBlink = 1;
+					gasBlinkInc = false;
+				}
 			}
 		}
 	}
