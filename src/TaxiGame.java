@@ -312,13 +312,13 @@ public class TaxiGame extends JPanel {
 					// TODO Add particle when upgrade threshold is reached
 					// TODO Add indicator to how close you are to next upgrade
 					if (money_in_engine % 30 == 0) {
-						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.01 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
+						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.0005 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
 						taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
 					}
 				} else if (i % 3 == 1) {// Fuel tank
 					money_in_gas++;
 					if (money_in_gas % 30 == 0) {
-						taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.01 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+						taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.005 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
 					}
 				} else if (i % 3 == 2) {// Max customers
 					money_in_capacity++;
