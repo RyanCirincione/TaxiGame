@@ -1,7 +1,3 @@
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-
 public class Customer {
 	public Vector position, destination, originalPosition;
 	public boolean pickedUp, droppedOff, goldMember, justSpawned, angerBlinkInc;
@@ -160,34 +156,7 @@ public class Customer {
 							Vector v = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
 							v.setLength(4 + 5 * Math.random());
 
-							TaxiGame.particles.add(new Particle(new Vector(TaxiGame.S_WIDTH / 2, TaxiGame.S_HEIGHT / 2), true) {
-								Vector vel;
-
-								{
-									vel = v;
-								}
-
-								public void update() {
-									pos = pos.plus(vel);
-									if (age > 15) {
-										vel = vel.setLength(vel.length() * 0.92).plus(new Vector(30 - pos.x, 30 - pos.y).setLength(age / 20.0));
-									}
-
-									if (pos.x < 30 && pos.y < 30) {
-										remove = true;
-										TaxiGame.income++;
-										if (Math.random() < 0.5) {
-											TaxiGame.sound.playSound("money");
-										}
-									}
-								}
-
-								public void paint(Graphics2D g) {
-									g.setColor(new Color(0, 230, 0, 255 - age / 15));
-									g.setFont(new Font("Times New Roman", Font.BOLD, 10));
-									g.drawString("$", (int) (pos.x), (int) (pos.y));
-								}
-							});
+							TaxiGame.particles.add(new Particle.Dollar(new Vector(TaxiGame.S_WIDTH / 2, TaxiGame.S_HEIGHT / 2), v));
 						}
 					}
 				} else {

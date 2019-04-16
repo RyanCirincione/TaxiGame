@@ -272,30 +272,7 @@ public class TaxiGame extends JPanel {
 						Vector velo = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
 						velo.setLength(4 + 5 * Math.random());
 
-						particles.add(new Particle(new Vector(S_WIDTH / 2, S_HEIGHT / 2), true) {
-							Vector vel;
-
-							{
-								vel = velo;
-							}
-
-							public void update() {
-								pos = pos.plus(velo);
-
-								if (age == 10) {
-									vel.set(-pos.x, S_HEIGHT - pos.y).setLength(30);
-								}
-
-								if (pos.x < 30 || pos.y > S_HEIGHT - 30) {
-									remove = true;
-								}
-							}
-
-							public void paint(Graphics2D g) {
-								g.setColor(new Color(175, 150, 50));
-								g.fillOval((int) pos.x, (int) pos.y, 6, 6);
-							}
-						});
+						particles.add(new Particle.GasBlob(new Vector(S_WIDTH / 2, S_HEIGHT / 2), velo));
 					}
 				}
 			}
@@ -353,26 +330,7 @@ public class TaxiGame extends JPanel {
 			Vector ve = taxi.velocity.scale(-1).plus(Math.random() * 2 - 1, Math.random() * 2 - 1);
 			ve.setLength(ve.length() * 0.6);
 
-			particles.add(new Particle(taxi.location.clone()) {
-				Vector vel;
-
-				public void update() {
-					{
-						vel = ve;
-					}
-
-					pos = pos.plus(vel);
-
-					if (age > 17) {
-						remove = true;
-					}
-				}
-
-				public void paint(Graphics2D g) {
-					g.setColor(Color.yellow);
-					g.fillOval((int) (pos.x), (int) (pos.y), 2, 2);
-				}
-			});
+			particles.add(new Particle.BrakeSpark(taxi.location.clone(), ve));
 		}
 
 		Iterator<Particle> iterP = particles.iterator();
