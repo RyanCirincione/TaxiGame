@@ -9,12 +9,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class Sound {
 	static Clip snd_money;
 	static Clip snd_placeholder;
-	
+
 	public Sound() {
-	// TODO Picking up customer
-	// TODO Dropping off customer
-	// TODO Building new track
-	// TODO Braking
+		// TODO Picking up customer
+		// TODO Dropping off customer
+		// TODO Building new track
+		// TODO Braking
+		// TODO Upgrade
 		try {
 			snd_money = AudioSystem.getClip();
 			snd_money.open(AudioSystem.getAudioInputStream(new File("res/money.wav").getAbsoluteFile()));
@@ -24,7 +25,7 @@ public class Sound {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void playSound(String sound) {
 		switch (sound) {
 		case "money":

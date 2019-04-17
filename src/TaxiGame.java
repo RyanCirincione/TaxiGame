@@ -291,16 +291,37 @@ public class TaxiGame extends JPanel {
 					if (money_in_engine % 30 == 0) {
 						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.0005 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
 						taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
+						for (int p = 0; p < 30; p++) {
+							Vector ve = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+							ve.setLength(ve.length());
+
+							particles.add(new Particle.BrakeSpark(taxi.location.clone(), ve));
+							particles.add(new Particle.Upgrade(taxi.location.clone(), ve, Color.green));
+						}
 					}
 				} else if (i % 3 == 1) {// Fuel tank
 					money_in_gas++;
 					if (money_in_gas % 30 == 0) {
 						taxi.maxGas = -(Taxi.MAX_MAX_GAS - Taxi.START_MAX_GAS) / (.005 * money_in_gas + 1) + Taxi.MAX_MAX_GAS;
+						for (int p = 0; p < 30; p++) {
+							Vector ve = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+							ve.setLength(ve.length());
+
+							particles.add(new Particle.BrakeSpark(taxi.location.clone(), ve));
+							particles.add(new Particle.Upgrade(taxi.location.clone(), ve, new Color(175, 150, 50)));
+						}
 					}
 				} else if (i % 3 == 2) {// Max customers
 					money_in_capacity++;
 					if (money_in_capacity % 30 == 0) {
 						taxi.maxCustomers++;
+						for (int p = 0; p < 30; p++) {
+							Vector ve = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
+							ve.setLength(ve.length());
+
+							particles.add(new Particle.BrakeSpark(taxi.location.clone(), ve));
+							particles.add(new Particle.Upgrade(taxi.location.clone(), ve, new Color(245, 170, 30)));
+						}
 					}
 				}
 			}
@@ -801,7 +822,7 @@ public class TaxiGame extends JPanel {
 		g.setColor(Color.red);
 		g.drawLine(60, S_HEIGHT - 20, (int) (40 * Math.cos((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + 60,
 				(int) -(40 * Math.sin((taxi.maxGas - taxi.gas) / taxi.maxGas * Math.PI)) + S_HEIGHT - 20);
-		
+
 		// Draw carrying
 		for (int i = 0; i < taxi.maxCustomers; i++) {
 			Customer cust = myCustomers[i];

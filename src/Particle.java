@@ -21,14 +21,15 @@ public abstract class Particle {
 		UI = ui;
 		remove = false;
 	}
-	
+
 	public abstract void update();
+
 	public abstract void paint(Graphics2D g);
-	
+
 	public static class BrakeSpark extends Particle {
 		Vector vel;
-		
-		public BrakeSpark (Vector p, Vector v) {
+
+		public BrakeSpark(Vector p, Vector v) {
 			super(p);
 			vel = v;
 		}
@@ -46,11 +47,11 @@ public abstract class Particle {
 			g.fillOval((int) (pos.x), (int) (pos.y), 2, 2);
 		}
 	}
-	
+
 	public static class GasBlob extends Particle {
 		Vector vel;
 
-		public GasBlob (Vector p, Vector v) {
+		public GasBlob(Vector p, Vector v) {
 			super(p, true);
 			vel = v;
 		}
@@ -72,7 +73,7 @@ public abstract class Particle {
 			g.fillOval((int) pos.x, (int) pos.y, 6, 6);
 		}
 	}
-	
+
 	public static class Dollar extends Particle {
 		Vector vel;
 
@@ -100,6 +101,32 @@ public abstract class Particle {
 			g.setColor(new Color(0, 230, 0, 255 - age / 15));
 			g.setFont(new Font("Times New Roman", Font.BOLD, 10));
 			g.drawString("$", (int) (pos.x), (int) (pos.y));
+		}
+	}
+
+	public static class Upgrade extends Particle {
+		Vector vel;
+		Color color;
+
+		public Upgrade(Vector p, Vector v, Color c) {
+			super(p);
+			vel = v;
+			color = c;
+		}
+
+		public void update() {
+			pos = pos.plus(vel);
+			vel = vel.setLength(vel.length() * 0.97);
+
+			if (age > 60) {
+				remove = true;
+			}
+		}
+
+		public void paint(Graphics2D g) {
+			int alpha = (int) ((60.0 - age) / 60.0 * 255);
+			g.setColor(new Color((color.getRGB() & 0x00FFFFFF) | (alpha << 24), true));
+			g.fillOval((int) pos.x, (int) pos.y, 3, 3);
 		}
 	}
 }
