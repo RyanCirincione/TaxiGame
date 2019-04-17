@@ -33,12 +33,10 @@ public class Customer {
 				radiusShrink = 1;
 				justSpawned = false;
 			}
-		} else if (visualFade < 1) {
-			if (!pickedUp && !droppedOff) {
-				radiusShrink -= 0.05;
-				visualFade = radiusShrink;
-				fillRadius = fillRadius * radiusShrink;
-			}
+		} else if (visualFade < 1 && !pickedUp && !droppedOff) {
+			radiusShrink -= 0.05;
+			visualFade = radiusShrink;
+			fillRadius = fillRadius * radiusShrink;
 		} else {
 			int carrying = 0;
 			for (int i = 0; i < TaxiGame.customers.size(); i++) {
@@ -194,7 +192,6 @@ public class Customer {
 			} else if (anger > 3600 && pickedUp) {
 				TaxiGame.rating -= 0.35 / (maxAnger / 2) * (goldMember ? 3 : 1);
 			}
-
 			if (droppedOff) {
 				position = position.lerp(destination, 0.3);
 				visualFade -= 0.01;

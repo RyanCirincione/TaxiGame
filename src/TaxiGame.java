@@ -838,7 +838,7 @@ public class TaxiGame extends JPanel {
 					myCustomersOpacity[i] += 0.05;
 				}
 			}
-			if (mco > 0) {
+			/*if (mco > 0) {
 				int cR = cust.goldMember ? 255 : 245;
 				int cG = cust.goldMember ? 235 : 170;
 				int cB = cust.goldMember ? 95 : 30;
@@ -858,7 +858,7 @@ public class TaxiGame extends JPanel {
 				cB -= cB * angerRatio;
 				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
 				g.drawArc(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger);
-			}
+			}*/
 		}
 
 		// Draw compass
