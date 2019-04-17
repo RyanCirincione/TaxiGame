@@ -203,6 +203,11 @@ public class TaxiGame extends JPanel {
 			Customer c = iter.next();
 			c.update();
 			if (c.visualFade <= 0) {
+				for (int i = 0; i < taxi.maxCustomers; i++) {
+					if (myCustomers[i] == c) {
+						myCustomers[i] = null;
+					}
+				}
 				iter.remove();
 			}
 		}
@@ -667,7 +672,8 @@ public class TaxiGame extends JPanel {
 		drawMapOval(g, taxi.location.x, taxi.location.y, 10, 10, true);
 
 		// Draw clients
-		for (Customer cust : customers) {
+		for (int i = 0; i < customers.size(); i++) {
+			Customer cust = customers.get(i);
 			Vector c = cust.position, d = cust.destination;
 			// draw dropping off
 			if (cust.droppedOff) {
@@ -837,28 +843,28 @@ public class TaxiGame extends JPanel {
 				if (mco < 1) {
 					myCustomersOpacity[i] += 0.05;
 				}
+				if (mco > 0) {
+					int cR = cust.goldMember ? 255 : 245;
+					int cG = cust.goldMember ? 235 : 170;
+					int cB = cust.goldMember ? 95 : 30;
+					double mcoAnger = mco;
+					if (cust.anger > cust.blinkAngerThreshold) {
+						mcoAnger *= cust.angerBlink;
+					}
+					if (!myCustomersGold[i]) {
+						g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
+					} else {
+						g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
+					}
+					g.fillOval(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20);
+					double angerRatio = cust.anger;
+					angerRatio /= cust.maxAnger;
+					cG -= cG * angerRatio;
+					cB -= cB * angerRatio;
+					g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
+					g.drawArc(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger);
+				}
 			}
-			/*if (mco > 0) {
-				int cR = cust.goldMember ? 255 : 245;
-				int cG = cust.goldMember ? 235 : 170;
-				int cB = cust.goldMember ? 95 : 30;
-				double mcoAnger = mco;
-				if (cust.anger > cust.blinkAngerThreshold) {
-					mcoAnger *= cust.angerBlink;
-				}
-				if (!myCustomersGold[i]) {
-					g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
-				} else {
-					g.setColor(new Color(cR, cG, cB, (int) (255 * mcoAnger)));
-				}
-				g.fillOval(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20);
-				double angerRatio = cust.anger;
-				angerRatio /= cust.maxAnger;
-				cG -= cG * angerRatio;
-				cB -= cB * angerRatio;
-				g.setColor(new Color(cR, cG, cB, (int) (255 * cust.angerBlink)));
-				g.drawArc(10 + i * 20, (int) (S_HEIGHT - 150 + (50 * mco)), 20, 20, 90, 360 * (cust.maxAnger - cust.anger) / cust.maxAnger);
-			}*/
 		}
 
 		// Draw compass
