@@ -291,8 +291,6 @@ public class TaxiGame extends JPanel {
 				moneySpendCooldown = MONEY_SPEND_SPEED;
 				if (i % 3 == 0) {// Engine
 					money_in_engine++;
-					// TODO Add particle when upgrade threshold is reached
-					// TODO Add indicator to how close you are to next upgrade
 					if (money_in_engine % 30 == 0) {
 						taxi.maxSpeed = -(Taxi.MAX_MAX_SPEED - Taxi.START_MAX_SPEED) / (.0005 * money_in_engine + 1) + Taxi.MAX_MAX_SPEED;
 						taxi.acceleration = -(Taxi.MAX_ACCELERATION - Taxi.START_ACCELERATION) / (.01 * money_in_engine + 1) + Taxi.MAX_ACCELERATION;
@@ -744,14 +742,29 @@ public class TaxiGame extends JPanel {
 				g.setColor(Color.green);
 				drawMapOval(g, v.x, v.y, 10, 10, true);
 				drawMapOval(g, v.x, v.y, 50, 50, false);
+
+				if (taxi.location.distance2(v) < 150 * 150) {
+					g.setColor(new Color(0, 255, 0, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
+					g.drawString("$" + money_in_engine % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
+				}
 			} else if (i % 3 == 1) {
 				g.setColor(new Color(175, 150, 50));
 				drawMapOval(g, v.x, v.y, 10, 10, true);
 				drawMapOval(g, v.x, v.y, 50, 50, false);
+
+				if (taxi.location.distance2(v) < 150 * 150) {
+					g.setColor(new Color(175, 150, 50, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
+					g.drawString("$" + money_in_gas % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
+				}
 			} else if (i % 3 == 2) {
 				g.setColor(new Color(245, 170, 30));
 				drawMapOval(g, v.x, v.y, 10, 10, true);
 				drawMapOval(g, v.x, v.y, 50, 50, false);
+
+				if (taxi.location.distance2(v) < 150 * 150) {
+					g.setColor(new Color(245, 170, 30, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
+					g.drawString("$" + money_in_capacity % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
+				}
 			}
 		}
 
