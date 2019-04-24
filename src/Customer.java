@@ -76,17 +76,18 @@ public class Customer {
 							int expansionRange = 2 + (int) (Math.random() * 2);
 
 							while (!isWithinRange((int) (newDestination.x / TaxiGame.TILE_SIZE), (int) (newDestination.y / TaxiGame.TILE_SIZE), expansionRange)
-									|| TaxiGame.tracks[(int) (newDestination.x / TaxiGame.TILE_SIZE)][(int) (newDestination.y / TaxiGame.TILE_SIZE)] != null
-											&& !isPointNearTrack(newDestination)) {
+									|| TaxiGame.tracks[(int) (newDestination.x / TaxiGame.TILE_SIZE)][(int) (newDestination.y / TaxiGame.TILE_SIZE)] != null) {
 								newDestination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
 							}
 
 							destination = newDestination;
-						}
-						// also make sure that the destination isn't right on top of the player
-						while (destination.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE
-								|| TaxiGame.tracks[(int) destination.x / TaxiGame.TILE_SIZE][(int) destination.y / TaxiGame.TILE_SIZE] == null || !isPointNearTrack(destination)) {
-							destination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
+						} else {
+							// also make sure that the destination isn't right on top of the player
+							while (destination.distance2(TaxiGame.taxi.location) < TaxiGame.TILE_SIZE * TaxiGame.TILE_SIZE
+									|| TaxiGame.tracks[(int) destination.x / TaxiGame.TILE_SIZE][(int) destination.y / TaxiGame.TILE_SIZE] == null
+									|| !isPointNearTrack(destination)) {
+								destination.set(Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks.length, Math.random() * TaxiGame.TILE_SIZE * TaxiGame.tracks[0].length);
+							}
 						}
 					} else {
 						position.set(position.lerp(TaxiGame.taxi.location, 1));
@@ -163,7 +164,7 @@ public class Customer {
 					}
 				}
 			}
-			
+
 			if (anger > blinkAngerThreshold) {
 				if (!angerBlinkInc) {
 					angerBlink -= 0.02;
