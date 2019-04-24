@@ -44,7 +44,7 @@ public class TaxiGame extends JPanel {
 	}
 
 	public static Sound sound = new Sound();
-	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25, MONEY_SPEND_SPEED = 3;
+	public static final int S_WIDTH = 1000, S_HEIGHT = 800, TILE_SIZE = 64, TRACK_PRICE = 25, MONEY_SPEND_SPEED = 3, SHOP_RADIUS = 25;
 	public static final double CURVE_RADIUS = TILE_SIZE / 2.5;
 	public static double SCREEN_SCALE = 1.75, MAX_RATING = 5.0;
 	public static int money_in_engine = 0, money_in_gas = 0, money_in_friction = 0, money_in_capacity = 0, moneySpendCooldown;
@@ -720,15 +720,14 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Draw shops
-		g.setColor(new Color(25, 0, 255));
 		for (Vector v : trackShops) {
+			g.setColor(new Color(25, 0, 255));
 			drawMapOval(g, v.x, v.y, 10, 10, true);
-			drawMapOval(g, v.x, v.y, 50, 50, false);
+			drawMapOval(g, v.x, v.y, SHOP_RADIUS * 2, SHOP_RADIUS * 2, false);
 
-			if (taxi.location.distance2(v) < 150 * 150) {
-				g.setColor(new Color(25, 0, 255, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
-				g.drawString("$" + trackInvestment + "/$25", (int) (v.x - 20), (int) (v.y - 8));
-			}
+			double d = taxi.location.distance(v);
+			g.setColor(new Color(25, 0, 255, (int) (64 + (d < 150 ? 96 * (1 - d / 150) : 1))));
+			g.fillArc((int) (v.x - SHOP_RADIUS), (int) (v.y - SHOP_RADIUS), SHOP_RADIUS * 2, SHOP_RADIUS * 2, 0, (int) (360.0 * trackInvestment / 25));
 		}
 		g.setColor(new Color(175, 150, 50));
 		for (Vector v : gasStations) {
@@ -741,30 +740,27 @@ public class TaxiGame extends JPanel {
 			if (i % 3 == 0) {
 				g.setColor(Color.green);
 				drawMapOval(g, v.x, v.y, 10, 10, true);
-				drawMapOval(g, v.x, v.y, 50, 50, false);
+				drawMapOval(g, v.x, v.y, SHOP_RADIUS * 2, SHOP_RADIUS * 2, false);
 
-				if (taxi.location.distance2(v) < 150 * 150) {
-					g.setColor(new Color(0, 255, 0, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
-					g.drawString("$" + money_in_engine % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
-				}
+				double d = taxi.location.distance(v);
+				g.setColor(new Color(0, 255, 0, (int) (64 + (d < 150 ? 96 * (1 - d / 150) : 1))));
+				g.fillArc((int) (v.x - SHOP_RADIUS), (int) (v.y - SHOP_RADIUS), SHOP_RADIUS * 2, SHOP_RADIUS * 2, 0, (int) (360.0 * (money_in_engine % 30) / 25));
 			} else if (i % 3 == 1) {
 				g.setColor(new Color(175, 150, 50));
 				drawMapOval(g, v.x, v.y, 10, 10, true);
-				drawMapOval(g, v.x, v.y, 50, 50, false);
+				drawMapOval(g, v.x, v.y, SHOP_RADIUS * 2, SHOP_RADIUS * 2, false);
 
-				if (taxi.location.distance2(v) < 150 * 150) {
-					g.setColor(new Color(175, 150, 50, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
-					g.drawString("$" + money_in_gas % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
-				}
+				double d = taxi.location.distance(v);
+				g.setColor(new Color(175, 150, 50, (int) (64 + (d < 150 ? 96 * (1 - d / 150) : 1))));
+				g.fillArc((int) (v.x - SHOP_RADIUS), (int) (v.y - SHOP_RADIUS), SHOP_RADIUS * 2, SHOP_RADIUS * 2, 0, (int) (360.0 * (money_in_gas % 30) / 25));
 			} else if (i % 3 == 2) {
 				g.setColor(new Color(245, 170, 30));
 				drawMapOval(g, v.x, v.y, 10, 10, true);
-				drawMapOval(g, v.x, v.y, 50, 50, false);
+				drawMapOval(g, v.x, v.y, SHOP_RADIUS * 2, SHOP_RADIUS * 2, false);
 
-				if (taxi.location.distance2(v) < 150 * 150) {
-					g.setColor(new Color(245, 170, 30, (int) (63 + 192 * (1 - taxi.location.distance(v) / 150))));
-					g.drawString("$" + money_in_capacity % 30 + "/$30", (int) (v.x - 20), (int) (v.y - 8));
-				}
+				double d = taxi.location.distance(v);
+				g.setColor(new Color(245, 170, 30, (int) (64 + (d < 150 ? 96 * (1 - d / 150) : 1))));
+				g.fillArc((int) (v.x - SHOP_RADIUS), (int) (v.y - SHOP_RADIUS), SHOP_RADIUS * 2, SHOP_RADIUS * 2, 0, (int) (360.0 * (money_in_capacity % 30) / 25));
 			}
 		}
 
