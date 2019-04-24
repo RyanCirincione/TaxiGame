@@ -102,7 +102,7 @@ public class TaxiGame extends JPanel {
 		taxi = new Taxi();
 		visualZoom = 100.0;
 		paused = false;
-		rating = 3.0;
+		rating = 2.0;
 		trackStock = 0;
 		cameraAngle = 0;
 		particles = new ArrayList<Particle>();

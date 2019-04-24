@@ -141,13 +141,13 @@ public class Customer {
 						TaxiGame.income += earnings;
 
 						if (anger < maxAnger / 8) {
-							TaxiGame.rating += 0.2;
+							TaxiGame.rating += 0.15;
 						} else if (anger < maxAnger / 4) {
-							TaxiGame.rating += 0.07;
-						} else if (anger < maxAnger / 2) {
 							TaxiGame.rating += 0.03;
+						} else if (anger < maxAnger / 2) {
+							TaxiGame.rating += 0.01;
 						} else if (anger < maxAnger) {
-							TaxiGame.rating += 0.011;
+							TaxiGame.rating += 0.002;
 						}
 
 						for (int i = 0; i < (int) earnings; i++) {
@@ -182,15 +182,15 @@ public class Customer {
 
 			anger++;
 			if (!pickedUp && anger > maxAnger) {
-				TaxiGame.rating -= goldMember ? 0.75 : 0.01;
+				TaxiGame.rating -= goldMember ? 1.2 : 0.07;
 				visualFade -= 0.01;
 				anger = maxAnger;
 			}
 			if (anger > maxAnger && pickedUp) {
-				TaxiGame.rating -= 0.5 / (maxAnger / 2) * (goldMember ? 3 : 1);
+				TaxiGame.rating -= 0.8 / (maxAnger / 2) * (goldMember ? 5 : 1);
 				anger = maxAnger;
 			} else if (anger > 3600 && pickedUp) {
-				TaxiGame.rating -= 0.35 / (maxAnger / 2) * (goldMember ? 3 : 1);
+				TaxiGame.rating -= 0.5 / (maxAnger / 2) * (goldMember ? 5 : 1);
 			}
 			if (droppedOff) {
 				position = position.lerp(destination, 0.3);
