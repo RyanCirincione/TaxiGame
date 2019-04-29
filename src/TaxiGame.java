@@ -88,6 +88,7 @@ public class TaxiGame extends JPanel {
 		newGameButton = new Rectangle(S_WIDTH / 2 - 100, S_HEIGHT / 2 - 50, 200, 100);
 		mainMenu = true;
 		input = new InputHandler();
+		sound.startSound("music");
 
 		this.setFocusable(true);
 		this.requestFocus();
