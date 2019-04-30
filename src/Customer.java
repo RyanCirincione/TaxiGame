@@ -139,7 +139,6 @@ public class Customer {
 						pickedUp = false;
 						droppedOff = true;
 						position.set(TaxiGame.taxi.location);
-						TaxiGame.income += earnings;
 
 						if (anger < maxAnger / 8) {
 							TaxiGame.rating += 0.15;

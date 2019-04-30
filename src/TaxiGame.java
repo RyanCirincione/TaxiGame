@@ -115,7 +115,7 @@ public class TaxiGame extends JPanel {
 		locationsOfInterest.add(gasStations);
 		locationsOfInterest.add(upgradeShops);
 		moneySpendCooldown = 0;
-		income = 50;
+		income = 0;
 		money = 0;
 		trackInvestment = 0;
 		numTracks = 0;
