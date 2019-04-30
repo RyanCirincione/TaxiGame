@@ -665,7 +665,7 @@ public class TaxiGame extends JPanel {
 			}
 		}
 		g.setStroke(new BasicStroke((int) (2 * visualZoom)));
-
+		
 		// Draw taxi
 		g.setColor(Color.yellow);
 		drawMapOval(g, taxi.location.x, taxi.location.y, 10, 10, true);

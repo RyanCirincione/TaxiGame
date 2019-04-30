@@ -201,7 +201,7 @@ public class Customer {
 		}
 	}
 
-	private static boolean isWithinRange(int x, int y, int range) {
+	public static boolean isWithinRange(int x, int y, int range) {
 		if (range <= 0) {
 			return false;
 		}
@@ -220,16 +220,16 @@ public class Customer {
 		}
 
 		if (TaxiGame.plannedTracks[x][y].right) {
-			return isWithinRange(x + 1, y, range - 1);
+			if (isWithinRange(x + 1, y, range - 1)) return true;
 		}
 		if (TaxiGame.plannedTracks[x][y].up) {
-			return isWithinRange(x, y - 1, range - 1);
+			if (isWithinRange(x, y - 1, range - 1)) return true;
 		}
 		if (TaxiGame.plannedTracks[x][y].left) {
-			return isWithinRange(x - 1, y, range - 1);
+			if (isWithinRange(x - 1, y, range - 1)) return true;
 		}
 		if (TaxiGame.plannedTracks[x][y].down) {
-			return isWithinRange(x, y + 1, range - 1);
+			if (isWithinRange(x, y + 1, range - 1)) return true;
 		}
 
 		return false;
