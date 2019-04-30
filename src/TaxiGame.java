@@ -272,7 +272,7 @@ public class TaxiGame extends JPanel {
 				if (money > 0 && taxi.gas < taxi.maxGas - 0.5 && moneySpendCooldown == 0) {
 					money--;
 					moneySpendCooldown = MONEY_SPEND_SPEED;
-					taxi.gas += 0.3;
+					taxi.gas += 0.4;
 
 					if (Math.random() < 0.7) {
 						Vector velo = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
@@ -825,8 +825,6 @@ public class TaxiGame extends JPanel {
 				carrying++;
 			}
 		}
-		g.setFont(new Font("Dialog", Font.PLAIN, 18));
-		drawString(g, "Customers: " + carrying + "/" + taxi.maxCustomers, 5, 80);
 		g.setFont(new Font("Dialog", Font.PLAIN, 12));
 
 		// Draw gas
