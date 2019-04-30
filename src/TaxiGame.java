@@ -734,6 +734,11 @@ public class TaxiGame extends JPanel {
 		for (Vector v : gasStations) {
 			g.fillRect((int) v.x - 5, (int) v.y - 5, 10, 10);
 			drawMapOval(g, v.x, v.y, 60, 60, false);
+			if (taxi.gas < taxi.blinkGasThreshold) {
+				g.setColor(new Color(255, 0, 0, (int) (150 * taxi.gasBlink)));
+				g.fillRect((int) v.x - 5, (int) v.y - 5, 10, 10);
+				drawMapOval(g, v.x, v.y, 60, 60, false);
+			}
 		}
 		// upgrade shops
 		for (int i = 0; i < upgradeShops.size(); i++) {
@@ -828,7 +833,7 @@ public class TaxiGame extends JPanel {
 		g.setColor(new Color(175, 150, 50));
 		g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
 		if (taxi.gas < taxi.blinkGasThreshold) {
-			g.setColor(new Color(255, 0, 0, (int) (255 * taxi.gasBlink)));
+			g.setColor(new Color(255, 0, 0, (int) (150 * taxi.gasBlink)));
 			g.fillRoundRect(10, S_HEIGHT - 80, 100, 70, 10, 10);
 		}
 		g.setColor(Color.black);
