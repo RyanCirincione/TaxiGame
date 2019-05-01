@@ -253,7 +253,10 @@ public class TaxiGame extends JPanel {
 		}
 
 		// Receive money
-		money += Math.signum(income -= Math.signum(income));
+		if(income > 0) {
+			money++;
+			income--;
+		}
 
 		// Put money in track shops
 		for (Vector v : trackShops) {
